@@ -1,5 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { CheckoutButton } from "@/components/dashboard/checkout-button";
+import { ManageSubscriptionButton } from "@/components/dashboard/manage-subscription-button";
+import { CREDIT_PACKAGES, SUBSCRIPTION_PLANS } from "@/lib/stripe/config";
 import type { CreditTransaction, Profile } from "@/types/database";
 
 const REASON_LABEL: Record<CreditTransaction["reason"], string> = {
@@ -10,13 +13,22 @@ const REASON_LABEL: Record<CreditTransaction["reason"], string> = {
   ajuste_manual: "Ajuste manual",
 };
 
-const packages = [
-  { credits: 100, price: "$5" },
-  { credits: 500, price: "$20" },
-  { credits: 1500, price: "$50" },
-];
+const PLAN_NAME: Record<Profile["plan"], string> = {
+  free: "Free",
+  basico: "Básico",
+  pro: "Pro",
+};
 
-export default async function CreditosPage() {
+function centsToPrice(cents: number) {
+  return `$${(cents / 100).toLocaleString("es", { minimumFractionDigits: 0 })}`;
+}
+
+export default async function CreditosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ checkout?: string }>;
+}) {
+  const { checkout } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -33,13 +45,63 @@ export default async function CreditosPage() {
       .returns<CreditTransaction[]>(),
   ]);
 
+  const currentPlan = profile?.plan ?? "free";
+
   return (
     <div className="flex flex-col gap-8">
-      <section className="rounded-xl border border-gold/30 bg-gold/10 p-6">
-        <p className="text-sm text-text-muted">Saldo actual</p>
-        <p className="mt-1 font-data text-3xl font-semibold text-gold">
-          {(profile?.credit_balance ?? 0).toLocaleString("es")} créditos
+      {checkout === "exito" && (
+        <p className="rounded-lg border border-green/30 bg-green/10 px-4 py-3 text-sm text-green-bright">
+          Pago confirmado. Tus créditos se acreditan en cuanto Stripe notifica la
+          transacción — si no ves el saldo actualizado, recarga la página en unos
+          segundos.
         </p>
+      )}
+      {checkout === "cancelado" && (
+        <p className="rounded-lg border border-border bg-surface-2 px-4 py-3 text-sm text-text-muted">
+          Pago cancelado. No se hizo ningún cargo.
+        </p>
+      )}
+
+      <section className="flex flex-col items-start justify-between gap-4 rounded-xl border border-gold/30 bg-gold/10 p-6 sm:flex-row sm:items-center">
+        <div>
+          <p className="text-sm text-text-muted">Saldo actual</p>
+          <p className="mt-1 font-data text-3xl font-semibold text-gold">
+            {(profile?.credit_balance ?? 0).toLocaleString("es")} créditos
+          </p>
+        </div>
+        <Badge tone="gold">Plan {PLAN_NAME[currentPlan]}</Badge>
+      </section>
+
+      <section>
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-lg font-medium text-text">Tu plan</h2>
+          {currentPlan !== "free" && <ManageSubscriptionButton />}
+        </div>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <PlanCard
+            name="Free"
+            price="$0"
+            credits="20 créditos de bienvenida"
+            isCurrent={currentPlan === "free"}
+          />
+          {Object.values(SUBSCRIPTION_PLANS).map((plan) => (
+            <PlanCard
+              key={plan.id}
+              name={plan.name}
+              price={`${centsToPrice(plan.priceCents)}/mes`}
+              credits={`${plan.monthlyCredits.toLocaleString("es")} créditos al mes`}
+              isCurrent={currentPlan === plan.id}
+              action={
+                currentPlan !== plan.id && (
+                  <CheckoutButton
+                    body={{ kind: "plan", id: plan.id }}
+                    label={`Elegir ${plan.name}`}
+                  />
+                )
+              }
+            />
+          ))}
+        </div>
       </section>
 
       <section>
@@ -47,25 +109,28 @@ export default async function CreditosPage() {
           Comprar créditos adicionales
         </h2>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {packages.map((pkg) => (
+          {Object.values(CREDIT_PACKAGES).map((pkg) => (
             <div
-              key={pkg.credits}
+              key={pkg.id}
               className="flex flex-col rounded-xl border border-border bg-surface p-5"
             >
               <p className="font-data text-xl font-semibold text-text">
                 {pkg.credits.toLocaleString("es")}
               </p>
               <p className="text-sm text-text-muted">créditos</p>
-              <p className="mt-3 font-data text-sm text-gold">{pkg.price}</p>
-              <Button variant="secondary" disabled className="mt-4">
-                Próximamente
-              </Button>
+              <p className="mt-3 font-data text-sm text-gold">
+                {centsToPrice(pkg.priceCents)}
+              </p>
+              <div className="mt-4">
+                <CheckoutButton
+                  body={{ kind: "package", id: pkg.id }}
+                  label="Comprar"
+                  variant="secondary"
+                />
+              </div>
             </div>
           ))}
         </div>
-        <p className="mt-3 text-xs text-text-muted">
-          La compra de paquetes con Stripe se habilita en la próxima fase.
-        </p>
       </section>
 
       <section>
@@ -117,6 +182,36 @@ export default async function CreditosPage() {
           )}
         </div>
       </section>
+    </div>
+  );
+}
+
+function PlanCard({
+  name,
+  price,
+  credits,
+  isCurrent,
+  action,
+}: {
+  name: string;
+  price: string;
+  credits: string;
+  isCurrent: boolean;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div
+      className={`flex flex-col rounded-xl border p-5 ${
+        isCurrent ? "border-green-bright bg-surface-2" : "border-border bg-surface"
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <p className="font-display font-medium text-text">{name}</p>
+        {isCurrent && <Badge tone="green">Tu plan</Badge>}
+      </div>
+      <p className="mt-2 font-data text-lg text-text">{price}</p>
+      <p className="mt-1 text-xs text-gold">{credits}</p>
+      {action && <div className="mt-4">{action}</div>}
     </div>
   );
 }

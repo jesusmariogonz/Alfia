@@ -101,12 +101,38 @@ Abre [http://localhost:3000](http://localhost:3000).
      que el balance nunca quede negativo aunque el usuario dispare varias
      consultas a la vez.
 
+### Pagos (Stripe)
+
+1. Crea una cuenta en [stripe.com](https://stripe.com) (modo test sirve para
+   desarrollo) y copia `STRIPE_SECRET_KEY` a `.env.local`.
+2. Los precios de planes y paquetes de créditos se definen en código
+   (`src/lib/stripe/config.ts`), como `price_data` inline — no hace falta
+   crear Products/Prices en el dashboard de Stripe para empezar.
+3. Corre `stripe listen --forward-to localhost:3000/api/stripe/webhook` con la
+   [Stripe CLI](https://stripe.com/docs/stripe-cli) para desarrollo local, y
+   copia el `whsec_...` que imprime a `STRIPE_WEBHOOK_SECRET`. En producción,
+   crea el endpoint de webhook en el dashboard apuntando a
+   `https://tu-dominio.com/api/stripe/webhook` con los eventos
+   `checkout.session.completed`, `invoice.payment_succeeded` y
+   `customer.subscription.deleted`.
+4. El webhook usa `SUPABASE_SERVICE_ROLE_KEY` (cliente admin, sin RLS) para
+   recargar créditos y actualizar el plan del usuario — asegúrate de tenerla
+   en `.env.local` también.
+
+Flujo: `/api/stripe/checkout` crea (o reutiliza) el customer de Stripe y una
+Checkout Session; el webhook, al confirmarse el pago, llama a `grantCredits`
+(la misma función atómica que usa el resto del sistema de créditos) y
+actualiza `profiles.plan`. Las renovaciones mensuales de suscripción se
+recargan vía `invoice.payment_succeeded`; al cancelar, `customer.subscription.deleted`
+regresa el plan a `free`.
+
 ### Estado por fase
 
-- **Fase 1 (en progreso)**: landing ✅, auth (registro/login con Supabase) ✅,
+- **Fase 1 (completa)**: landing ✅, auth (registro/login con Supabase) ✅,
   dashboard con resumen diario + noticias (contenido de ejemplo, aún no
   generado automáticamente) ✅, chat de inversión con guardrails de dominio y
-  descuento atómico de créditos ✅, historial de transacciones ✅. Pendiente:
-  integración de Stripe (suscripciones + compra de paquetes) y el job que
-  genera el resumen diario y las noticias reales.
+  descuento atómico de créditos ✅, historial de transacciones ✅, Stripe
+  (suscripciones + compra de créditos + webhook) ✅. Pendiente: el job que
+  genera el resumen diario y las noticias reales (hoy son contenido de
+  ejemplo).
 - **Fase 2/3**: pendientes, ver estructura de carpetas arriba.
