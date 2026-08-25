@@ -78,7 +78,35 @@ Tipografía: `--font-display` (Space Grotesk), `--font-body` (Inter),
 
 ```bash
 npm install
+cp .env.example .env.local   # completa las claves de Supabase (y Anthropic si quieres probar el chat)
 npm run dev
 ```
 
 Abre [http://localhost:3000](http://localhost:3000).
+
+### Base de datos (Supabase)
+
+1. Crea un proyecto en [supabase.com](https://supabase.com).
+2. Copia `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` del panel a
+   `.env.local`.
+3. Corre la migración `supabase/migrations/0001_init.sql` en el SQL editor del
+   proyecto (o vía `supabase db push` si usas la CLI). Crea:
+   - `profiles`: perfil + balance de créditos por usuario.
+   - `credit_transactions`: libro contable de créditos (append-only).
+   - `ai_usage_log`: auditoría de cada consulta a la IA (usuario, modelo,
+     tokens, créditos cobrados).
+   - Un trigger que crea el perfil con 20 créditos de bienvenida al registrarse.
+   - Las funciones `charge_credits` / `grant_credits`: descuentan o recargan
+     créditos de forma atómica (bloqueo de fila + validación de saldo), para
+     que el balance nunca quede negativo aunque el usuario dispare varias
+     consultas a la vez.
+
+### Estado por fase
+
+- **Fase 1 (en progreso)**: landing ✅, auth (registro/login con Supabase) ✅,
+  dashboard con resumen diario + noticias (contenido de ejemplo, aún no
+  generado automáticamente) ✅, chat de inversión con guardrails de dominio y
+  descuento atómico de créditos ✅, historial de transacciones ✅. Pendiente:
+  integración de Stripe (suscripciones + compra de paquetes) y el job que
+  genera el resumen diario y las noticias reales.
+- **Fase 2/3**: pendientes, ver estructura de carpetas arriba.
