@@ -25,6 +25,13 @@ export type Profile = {
   updated_at: string;
 };
 
+export type WatchlistItem = {
+  id: string;
+  user_id: string;
+  symbol: string;
+  created_at: string;
+};
+
 export type CreditTransaction = {
   id: string;
   user_id: string;

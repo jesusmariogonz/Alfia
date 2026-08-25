@@ -4,6 +4,10 @@ import { LogoLockup } from "@/components/brand/logo-lockup";
 const links = [
   { href: "/dashboard", label: "Resumen" },
   { href: "/chat", label: "Chat de inversión" },
+  { href: "/screener", label: "Screener" },
+  { href: "/watchlist", label: "Watchlist" },
+  { href: "/comparar", label: "Comparador" },
+  { href: "/simulador", label: "Simulador Montecarlo" },
   { href: "/creditos", label: "Créditos" },
 ];
 

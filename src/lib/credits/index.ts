@@ -78,5 +78,5 @@ export const CREDIT_COSTS: Record<QueryType, number> = {
   resumen_diario: 0,
   montecarlo: 5,
   comparador: 2,
-  screener: 2,
+  screener: 0, // filtro local, no invoca IA
 };

@@ -126,6 +126,19 @@ actualiza `profiles.plan`. Las renovaciones mensuales de suscripción se
 recargan vía `invoice.payment_succeeded`; al cancelar, `customer.subscription.deleted`
 regresa el plan a `free`.
 
+### Datos de mercado (Fase 2)
+
+`src/lib/market-data` es el único punto de acceso a precios/series
+históricas. Hoy está respaldado por un generador sintético determinista
+(`synthetic.ts`, seed por símbolo — el mismo activo siempre da la misma
+serie) sobre un universo de ~15 tickers de ejemplo (`universe.ts`). Cuando se
+conecte Polygon.io o Finnhub, solo `getCloses`/`getQuote` en
+`market-data/index.ts` cambian de implementación — el resto del código
+(analíticas, screener, comparador, Montecarlo, watchlist) no se toca.
+
+Corre la migración `supabase/migrations/0002_watchlist.sql` además de la
+0001 para habilitar la watchlist.
+
 ### Estado por fase
 
 - **Fase 1 (completa)**: landing ✅, auth (registro/login con Supabase) ✅,
@@ -135,4 +148,13 @@ regresa el plan a `free`.
   (suscripciones + compra de créditos + webhook) ✅. Pendiente: el job que
   genera el resumen diario y las noticias reales (hoy son contenido de
   ejemplo).
-- **Fase 2/3**: pendientes, ver estructura de carpetas arriba.
+- **Fase 2 (completa)**: simulador de Montecarlo (`/simulador`, GBM con 2,000
+  simulaciones + interpretación en lenguaje natural) ✅, comparador de
+  activos (`/comparar`) ✅, screener con filtros por tipo/retorno/volatilidad
+  (`/screener`, sin costo en créditos) ✅, ficha de activo con métricas de
+  riesgo — retorno anualizado, volatilidad, Sharpe, máximo drawdown, VaR 95%
+  (`/activos/[symbol]`) ✅, watchlist persistida por usuario (`/watchlist`) ✅.
+  Pendiente: alertas por email/notificación (fase 2 original) — no se
+  implementó todavía porque requiere un proveedor de email y un job en
+  segundo plano (colas/cron) que aún no está configurado en el proyecto.
+- **Fase 3**: pendiente, ver estructura de carpetas arriba.

@@ -1,5 +1,13 @@
+import Link from "next/link";
 import { NewsFeed } from "@/components/dashboard/news-feed";
 import { Disclaimer } from "@/components/ui/disclaimer";
+
+const quickLinks = [
+  { href: "/screener", label: "Screener", description: "Filtra activos por retorno y riesgo" },
+  { href: "/comparar", label: "Comparador", description: "Compara dos activos lado a lado" },
+  { href: "/simulador", label: "Simulador Montecarlo", description: "Proyecta escenarios de inversión" },
+  { href: "/watchlist", label: "Watchlist", description: "Sigue tus activos favoritos" },
+];
 
 export default function DashboardPage() {
   const today = new Intl.DateTimeFormat("es", {
@@ -26,6 +34,22 @@ export default function DashboardPage() {
             La volatilidad implícita se mantuvo estable durante la sesión.
           </p>
           <Disclaimer className="mt-4" />
+        </div>
+      </section>
+
+      <section>
+        <h2 className="font-display text-lg font-medium text-text">Analíticos</h2>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {quickLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="rounded-xl border border-border bg-surface p-5 transition-colors hover:border-green-bright/40"
+            >
+              <p className="font-display font-medium text-text">{link.label}</p>
+              <p className="mt-1.5 text-xs text-text-muted">{link.description}</p>
+            </Link>
+          ))}
         </div>
       </section>
 
