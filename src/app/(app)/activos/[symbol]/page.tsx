@@ -3,9 +3,11 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { findAsset, getCloses } from "@/lib/market-data";
 import { computeRiskMetrics } from "@/lib/analytics/metrics";
+import { computeAlfiaScore, scoreLabel } from "@/lib/analytics/score";
 import { Sparkline } from "@/components/analytics/sparkline";
 import { RiskMetricsGrid } from "@/components/analytics/risk-metrics-grid";
 import { WatchlistToggleButton } from "@/components/analytics/watchlist-toggle-button";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Disclaimer } from "@/components/ui/disclaimer";
 
@@ -20,6 +22,7 @@ export default async function ActivoPage({
 
   const closes = getCloses(asset.symbol)!;
   const metrics = computeRiskMetrics(closes);
+  const score = computeAlfiaScore(metrics);
   const last = closes[closes.length - 1].close;
   const prev = closes[closes.length - 2].close;
   const changePct = last / prev - 1;
@@ -51,6 +54,9 @@ export default async function ActivoPage({
               {changePct >= 0 ? "+" : ""}
               {(changePct * 100).toFixed(2)}%
             </span>
+            <Badge tone={score >= 65 ? "green" : score >= 40 ? "gold" : "neutral"}>
+              Alfia Score {score} · {scoreLabel(score)}
+            </Badge>
           </div>
         </div>
         <WatchlistToggleButton
@@ -79,6 +85,9 @@ export default async function ActivoPage({
         </Link>
         <Link href={`/comparar?symbolA=${asset.symbol}`}>
           <Button variant="secondary">Comparar con otro activo</Button>
+        </Link>
+        <Link href={`/backtesting?symbol=${asset.symbol}`}>
+          <Button variant="secondary">Probar una estrategia</Button>
         </Link>
       </div>
     </div>

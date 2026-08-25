@@ -139,6 +139,27 @@ conecte Polygon.io o Finnhub, solo `getCloses`/`getQuote` en
 Corre la migración `supabase/migrations/0002_watchlist.sql` además de la
 0001 para habilitar la watchlist.
 
+### Newsletter semanal (Fase 3)
+
+1. Crea una cuenta en [resend.com](https://resend.com), verifica un dominio
+   de envío y copia la API key a `RESEND_API_KEY`. Ajusta
+   `NEWSLETTER_FROM_EMAIL` a una dirección de ese dominio.
+2. Genera un secreto aleatorio para `CRON_SECRET` (ej. `openssl rand -hex 32`).
+3. `vercel.json` ya define el cron semanal (lunes 13:00 UTC) apuntando a
+   `/api/cron/newsletter`. Si despliegas en Vercel con un plan que soporte
+   Cron Jobs, Vercel agrega automáticamente el header
+   `Authorization: Bearer $CRON_SECRET` — no hay que configurar nada más ahí.
+   Si no usas Vercel, necesitas un cron externo (GitHub Actions, cron-job.org,
+   etc.) que llame `GET /api/cron/newsletter` semanalmente con ese mismo
+   header.
+4. Corre la migración `supabase/migrations/0004_newsletter.sql` para crear
+   la tabla de suscriptores.
+
+El contenido del correo hoy resume el movimiento semanal del universo
+sintético de `lib/market-data` (ver nota de Fase 2) — cuando haya datos y
+noticias reales, `lib/content/newsletter.ts` es el único archivo a
+actualizar.
+
 ### Estado por fase
 
 - **Fase 1 (completa)**: landing ✅, auth (registro/login con Supabase) ✅,
@@ -157,4 +178,45 @@ Corre la migración `supabase/migrations/0002_watchlist.sql` además de la
   Pendiente: alertas por email/notificación (fase 2 original) — no se
   implementó todavía porque requiere un proveedor de email y un job en
   segundo plano (colas/cron) que aún no está configurado en el proyecto.
-- **Fase 3**: pendiente, ver estructura de carpetas arriba.
+- **Fase 3 (completa)**: backtesting simple de estrategias descritas en
+  lenguaje natural (`/backtesting`, IA extrae la estrategia y la corre contra
+  comprar-y-mantener) ✅, Alfia Score — rating propio 0-100 por activo,
+  visible en el screener y en la ficha de cada activo ✅, contenido
+  educativo público — glosario y tutoriales en `/aprende`, fuera del login,
+  pensado como gancho de SEO/tráfico orgánico ✅, newsletter semanal
+  automatizada con suscripción desde el footer de la landing y envío vía
+  cron ✅.
+
+### Pendientes de configuración (todas las fases)
+
+Todo lo que necesitas hacer tú (claves, servicios externos, pasos manuales)
+para que cada pieza funcione en un entorno real:
+
+1. **Supabase**: crear el proyecto y correr, en orden, las 4 migraciones de
+   `supabase/migrations/` (0001 perfiles/créditos, 0002 watchlist, 0003
+   check constraint de backtest, 0004 newsletter). Completar
+   `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` y
+   `SUPABASE_SERVICE_ROLE_KEY`.
+2. **Stripe**: completar `STRIPE_SECRET_KEY`; configurar el webhook (local con
+   `stripe listen` o en producción desde el dashboard) apuntando a
+   `/api/stripe/webhook` con los eventos `checkout.session.completed`,
+   `invoice.payment_succeeded` y `customer.subscription.deleted`; completar
+   `STRIPE_WEBHOOK_SECRET`.
+3. **IA (Anthropic)**: completar `ANTHROPIC_API_KEY`. Sin esta clave, el chat,
+   el simulador de Montecarlo, el comparador y el backtesting funcionan pero
+   devuelven un aviso de "IA no configurada" en vez de la interpretación en
+   lenguaje natural.
+4. **Datos de mercado reales**: hoy todo corre sobre datos sintéticos
+   (`lib/market-data`). Cuando quieras precios reales, contratar Polygon.io o
+   Finnhub, completar `POLYGON_API_KEY`, y reemplazar la implementación de
+   `getCloses`/`getQuote` en `lib/market-data/index.ts` — es un cambio
+   aislado a ese archivo.
+5. **Newsletter**: cuenta y dominio verificado en Resend
+   (`RESEND_API_KEY`, `NEWSLETTER_FROM_EMAIL`), generar `CRON_SECRET`, y
+   asegurarse de que algo dispare `/api/cron/newsletter` semanalmente (Vercel
+   Cron si despliegas ahí — ya configurado en `vercel.json` — o un cron
+   externo si no).
+6. **Dominio de producción**: una vez tengas el dominio real, actualizar
+   `NEXT_PUBLIC_SITE_URL` — se usa para los links de retorno de Stripe
+   Checkout, el callback de confirmación de correo de Supabase Auth, y los
+   links de baja del newsletter.

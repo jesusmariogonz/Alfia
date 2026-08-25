@@ -12,7 +12,8 @@ export type QueryType =
   | "resumen_diario"
   | "montecarlo"
   | "comparador"
-  | "screener";
+  | "screener"
+  | "backtest";
 
 export type Profile = {
   id: string;

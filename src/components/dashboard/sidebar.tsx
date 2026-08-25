@@ -8,6 +8,8 @@ const links = [
   { href: "/watchlist", label: "Watchlist" },
   { href: "/comparar", label: "Comparador" },
   { href: "/simulador", label: "Simulador Montecarlo" },
+  { href: "/backtesting", label: "Backtesting" },
+  { href: "/aprende", label: "Aprende" },
   { href: "/creditos", label: "Créditos" },
 ];
 

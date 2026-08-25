@@ -1,11 +1,12 @@
 import { UNIVERSE, getCloses } from "@/lib/market-data";
-import { annualizedReturn, annualizedVolatility, dailyReturns, sharpeRatio } from "@/lib/analytics/metrics";
+import { computeRiskMetrics } from "@/lib/analytics/metrics";
+import { computeAlfiaScore } from "@/lib/analytics/score";
 import { ScreenerTable, type ScreenerRow } from "@/components/analytics/screener-table";
 
 export default function ScreenerPage() {
   const rows: ScreenerRow[] = UNIVERSE.map((asset) => {
     const closes = getCloses(asset.symbol)!;
-    const returns = dailyReturns(closes);
+    const metrics = computeRiskMetrics(closes);
     const last = closes[closes.length - 1].close;
     const prev = closes[closes.length - 2].close;
 
@@ -16,9 +17,10 @@ export default function ScreenerPage() {
       assetClass: asset.assetClass,
       price: last,
       changePct: last / prev - 1,
-      annualizedReturn: annualizedReturn(closes),
-      annualizedVolatility: annualizedVolatility(returns),
-      sharpeRatio: sharpeRatio(returns),
+      annualizedReturn: metrics.annualizedReturn,
+      annualizedVolatility: metrics.annualizedVolatility,
+      sharpeRatio: metrics.sharpeRatio,
+      alfiaScore: computeAlfiaScore(metrics),
       sparkline: closes.slice(-60).map((c) => c.close),
     };
   });

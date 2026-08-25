@@ -10,6 +10,7 @@ const PROTECTED_PREFIXES = [
   "/comparar",
   "/simulador",
   "/activos",
+  "/backtesting",
 ];
 const AUTH_PAGES = ["/login", "/registro"];
 

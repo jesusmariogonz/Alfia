@@ -19,6 +19,9 @@ export function Navbar() {
           <a href="#faq" className="text-sm text-text-muted hover:text-text">
             Preguntas frecuentes
           </a>
+          <Link href="/aprende" className="text-sm text-text-muted hover:text-text">
+            Aprende
+          </Link>
         </nav>
         <div className="flex items-center gap-3">
           <Link href="/login" className="hidden text-sm text-text-muted hover:text-text sm:inline">

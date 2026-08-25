@@ -15,8 +15,15 @@ export type ScreenerRow = {
   annualizedReturn: number;
   annualizedVolatility: number;
   sharpeRatio: number;
+  alfiaScore: number;
   sparkline: number[];
 };
+
+function scoreTone(score: number): string {
+  if (score >= 65) return "text-data-up";
+  if (score >= 40) return "text-gold";
+  return "text-data-down";
+}
 
 const ASSET_CLASS_LABEL: Record<AssetClass, string> = {
   accion: "Acción",
@@ -94,6 +101,7 @@ export function ScreenerTable({ rows }: { rows: ScreenerRow[] }) {
               <th className="px-5 py-3 font-medium text-right">Retorno anual.</th>
               <th className="px-5 py-3 font-medium text-right">Volatilidad</th>
               <th className="px-5 py-3 font-medium text-right">Sharpe</th>
+              <th className="px-5 py-3 font-medium text-right">Alfia Score</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -130,11 +138,14 @@ export function ScreenerTable({ rows }: { rows: ScreenerRow[] }) {
                 <td className="px-5 py-3 text-right font-data text-text">
                   {row.sharpeRatio.toFixed(2)}
                 </td>
+                <td className={`px-5 py-3 text-right font-data font-semibold ${scoreTone(row.alfiaScore)}`}>
+                  {row.alfiaScore}
+                </td>
               </tr>
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-5 py-8 text-center text-text-muted">
+                <td colSpan={7} className="px-5 py-8 text-center text-text-muted">
                   Ningún activo cumple estos filtros. Prueba ampliarlos.
                 </td>
               </tr>
