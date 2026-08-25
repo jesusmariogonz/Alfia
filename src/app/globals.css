@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+:root {
+  /* Superficies */
+  --bg: #14171a;
+  --surface: #1b1f23;
+  --surface-2: #20252a;
+  --border: #2a2f35;
+
+  /* Texto */
+  --text: #e8eaed;
+  --text-muted: #8b939b;
+
+  /* Marca */
+  --green: #2fa86b;
+  --green-bright: #34c77b;
+
+  /* Datos de mercado (nunca reutilizar para UI de marca) */
+  --data-up: #4ade80;
+  --data-down: #f2545b;
+
+  /* Premium / créditos */
+  --gold: #d9a94e;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-green: var(--green);
+  --color-green-bright: var(--green-bright);
+  --color-data-up: var(--data-up);
+  --color-data-down: var(--data-down);
+  --color-gold: var(--gold);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-data: var(--font-data);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+::selection {
+  background: var(--green-bright);
+  color: var(--bg);
+}
