@@ -72,12 +72,17 @@ export async function grantCredits(
   return { transactionId: row.transaction_id, newBalance: row.new_balance };
 }
 
-/** Costo en créditos por tipo de consulta. Mostrado al usuario antes de enviar. */
+/**
+ * Costo en créditos por tipo de consulta. Mostrado al usuario antes de
+ * enviar. Calibrado contra el costo real de tokens de cada feature (Haiku
+ * 4.5 para chat, Sonnet 5 para montecarlo/comparador/backtest) para que el
+ * cobro relativo entre features refleje su costo relativo real.
+ */
 export const CREDIT_COSTS: Record<QueryType, number> = {
   chat: 1,
   resumen_diario: 0,
-  montecarlo: 5,
-  comparador: 2,
+  montecarlo: 4,
+  comparador: 3,
   screener: 0, // filtro local, no invoca IA
   backtest: 4,
 };

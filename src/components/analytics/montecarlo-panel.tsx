@@ -7,7 +7,7 @@ import { Disclaimer } from "@/components/ui/disclaimer";
 import { MonteCarloChart } from "@/components/analytics/montecarlo-chart";
 import { UNIVERSE } from "@/lib/market-data";
 
-const COST = 5;
+const COST = 4;
 
 type Result = {
   asset: { symbol: string; name: string };

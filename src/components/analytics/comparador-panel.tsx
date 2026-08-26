@@ -9,7 +9,7 @@ import { UNIVERSE } from "@/lib/market-data";
 import type { RiskMetrics } from "@/lib/analytics/metrics";
 import type { UniverseAsset } from "@/lib/market-data";
 
-const COST = 2;
+const COST = 3;
 
 type Result = {
   a: { asset: UniverseAsset; metrics: RiskMetrics };
