@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { LogoMark } from "@/components/brand/logo-mark";
 
 export function Hero() {
   return (
     <section className="mx-auto max-w-6xl px-6 pb-20 pt-16 md:pb-28 md:pt-24">
       <div className="mx-auto max-w-3xl text-center">
+        <LogoMark size={56} className="mx-auto mb-6" />
         <Badge tone="green">Contenido diario generado por IA</Badge>
         <h1 className="mt-6 font-display text-4xl font-semibold leading-tight tracking-tight text-text md:text-6xl">
           Análisis de mercado, señales y simulación —{" "}
