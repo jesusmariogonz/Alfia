@@ -46,6 +46,14 @@ export type Tutorial = {
   created_at: string;
 };
 
+export type SentimentVote = {
+  id: string;
+  user_id: string;
+  vote_date: string;
+  vote: "bullish" | "bearish";
+  created_at: string;
+};
+
 export type BriefingType = "apertura" | "intradia" | "cierre";
 
 export type DeepReportContent = {

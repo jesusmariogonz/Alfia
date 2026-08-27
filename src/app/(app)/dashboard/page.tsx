@@ -6,7 +6,8 @@ import { Disclaimer } from "@/components/ui/disclaimer";
 import { Badge } from "@/components/ui/badge";
 import { isFreePlan, canUseChat } from "@/lib/plan";
 import { computeDailyReport } from "@/lib/analytics/daily-report";
-import type { Profile } from "@/types/database";
+import { BullishBearishPoll } from "@/components/dashboard/bullish-bearish-poll";
+import type { Profile, SentimentVote } from "@/types/database";
 
 type QuickLink = {
   href: string;
@@ -52,6 +53,16 @@ export default async function DashboardPage() {
   const report = await computeDailyReport();
   const sentiment = report.sentiment;
 
+  const today8601 = new Date().toISOString().slice(0, 10);
+  const { data: todaysVotes } = await supabase
+    .from("sentiment_votes")
+    .select("*")
+    .eq("vote_date", today8601)
+    .returns<SentimentVote[]>();
+  const myVote = todaysVotes?.find((v) => v.user_id === user!.id)?.vote ?? null;
+  const bullishCount = todaysVotes?.filter((v) => v.vote === "bullish").length ?? 0;
+  const bearishCount = todaysVotes?.filter((v) => v.vote === "bearish").length ?? 0;
+
   return (
     <div className="flex flex-col gap-8">
       <section>
@@ -63,6 +74,13 @@ export default async function DashboardPage() {
             <MarketSentimentBanner sentiment={sentiment} />
           </div>
         )}
+        <div className="mt-4">
+          <BullishBearishPoll
+            initialVote={myVote}
+            initialBullish={bullishCount}
+            initialBearish={bearishCount}
+          />
+        </div>
         <div className="mt-4 rounded-xl border border-border bg-surface p-6">
           <h2 className="font-display text-lg font-medium text-text">
             Resumen del mercado

@@ -6,6 +6,7 @@ import { computeRiskMetrics } from "@/lib/analytics/metrics";
 import { computeAlfiaScore, scoreLabel } from "@/lib/analytics/score";
 import { AssetChartPanel } from "@/components/analytics/asset-chart-panel";
 import { QuoteStats } from "@/components/analytics/quote-stats";
+import { PositionSizeCalculator } from "@/components/analytics/position-size-calculator";
 import { RiskMetricsGrid } from "@/components/analytics/risk-metrics-grid";
 import { WatchlistToggleButton } from "@/components/analytics/watchlist-toggle-button";
 import { PositionForm } from "@/components/portfolio/position-form";
@@ -104,6 +105,8 @@ export default async function ActivoPage({
       />
 
       <QuoteStats closes={closes} />
+
+      <PositionSizeCalculator currentPrice={last} />
 
       <div>
         <h2 className="font-display text-lg font-medium text-text">
