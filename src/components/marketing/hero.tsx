@@ -22,11 +22,11 @@ export function Hero() {
           <Link href="/registro">
             <Button className="px-7 py-3 text-base">Empezar gratis</Button>
           </Link>
-          <a href="#producto">
+          <Link href="/screener">
             <Button variant="secondary" className="px-7 py-3 text-base">
-              Ver cómo funciona
+              Ver el screener en vivo
             </Button>
-          </a>
+          </Link>
         </div>
         <p className="mt-4 text-xs text-text-muted">
           Esto es información educativa, no asesoría financiera regulada.

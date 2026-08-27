@@ -35,15 +35,18 @@ export default async function ActivoPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const [{ data: watchlistItem }, { data: profile }] = await Promise.all([
-    supabase
-      .from("watchlist_items")
-      .select("id, invested_usd")
-      .eq("user_id", user!.id)
-      .eq("symbol", asset.symbol)
-      .maybeSingle(),
-    supabase.from("profiles").select("*").eq("id", user!.id).single<Profile>(),
-  ]);
+
+  const [{ data: watchlistItem }, { data: profile }] = user
+    ? await Promise.all([
+        supabase
+          .from("watchlist_items")
+          .select("id, invested_usd")
+          .eq("user_id", user.id)
+          .eq("symbol", asset.symbol)
+          .maybeSingle(),
+        supabase.from("profiles").select("*").eq("id", user.id).single<Profile>(),
+      ])
+    : [{ data: null }, { data: null }];
   const canOpenPosition = canOpenPositions(profile?.plan ?? "free");
 
   return (
@@ -67,10 +70,16 @@ export default async function ActivoPage({
             </Badge>
           </div>
         </div>
-        <WatchlistToggleButton
-          symbol={asset.symbol}
-          initialInWatchlist={Boolean(watchlistItem)}
-        />
+        {user ? (
+          <WatchlistToggleButton
+            symbol={asset.symbol}
+            initialInWatchlist={Boolean(watchlistItem)}
+          />
+        ) : (
+          <Link href="/registro">
+            <Button variant="secondary">Regístrate para seguir este activo</Button>
+          </Link>
+        )}
       </div>
 
       <div className="rounded-xl border border-border bg-surface p-6">
@@ -88,7 +97,18 @@ export default async function ActivoPage({
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {canOpenPosition ? (
+        {!user ? (
+          <div className="rounded-xl border border-border bg-surface p-5">
+            <p className="text-sm font-medium text-text">Abrir posición</p>
+            <p className="mt-1 text-xs text-text-muted">
+              Crea una cuenta gratis para registrar cuánto tienes invertido y
+              reunirlo en Mi Portafolio.
+            </p>
+            <Link href="/registro" className="mt-3 inline-block">
+              <Button variant="secondary">Crear cuenta gratis</Button>
+            </Link>
+          </div>
+        ) : canOpenPosition ? (
           <PositionForm
             symbol={asset.symbol}
             initialInvestedUsd={watchlistItem?.invested_usd ?? null}

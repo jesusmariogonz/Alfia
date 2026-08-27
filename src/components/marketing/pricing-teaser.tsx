@@ -39,6 +39,37 @@ const plans: Plan[] = [
   },
 ];
 
+type FeatureRow = {
+  label: string;
+  free: boolean | string;
+  basico: boolean | string;
+  pro: boolean | string;
+};
+
+const featureRows: FeatureRow[] = [
+  { label: "Screener de activos", free: "6 activos", basico: "Completo", pro: "Completo" },
+  { label: "Indicadores avanzados (medias móviles, velas)", free: false, basico: true, pro: true },
+  { label: "Mi Portafolio (posiciones, riesgo, correlación)", free: false, basico: true, pro: true },
+  { label: "Dashboard con noticias y resumen diario", free: "Reducido", basico: "Completo", pro: "Completo" },
+  { label: "Chat de inversión con IA", free: false, basico: false, pro: true },
+  { label: "Montecarlo, comparador y backtest (vía el chat)", free: false, basico: false, pro: true },
+];
+
+function Cell({ value }: { value: boolean | string }) {
+  if (typeof value === "string") {
+    return <span className="font-data text-sm text-text">{value}</span>;
+  }
+  return value ? (
+    <span className="font-data text-lg text-green-bright" aria-label="Incluido">
+      ✓
+    </span>
+  ) : (
+    <span className="font-data text-lg text-text-muted" aria-label="No incluido">
+      —
+    </span>
+  );
+}
+
 export function PricingTeaser() {
   return (
     <section id="precios" className="mx-auto max-w-6xl px-6 py-20">
@@ -87,6 +118,35 @@ export function PricingTeaser() {
             </Link>
           </div>
         ))}
+      </div>
+
+      <div className="mt-10 overflow-x-auto rounded-xl border border-border bg-surface">
+        <table className="w-full min-w-[560px] text-left text-sm">
+          <thead>
+            <tr className="border-b border-border text-text-muted">
+              <th className="px-5 py-3 font-medium">Qué incluye</th>
+              <th className="px-5 py-3 text-center font-medium">Free</th>
+              <th className="px-5 py-3 text-center font-medium">Básico</th>
+              <th className="px-5 py-3 text-center font-medium">Pro</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {featureRows.map((row) => (
+              <tr key={row.label}>
+                <td className="px-5 py-3 text-text">{row.label}</td>
+                <td className="px-5 py-3 text-center">
+                  <Cell value={row.free} />
+                </td>
+                <td className="px-5 py-3 text-center">
+                  <Cell value={row.basico} />
+                </td>
+                <td className="px-5 py-3 text-center">
+                  <Cell value={row.pro} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
   );

@@ -10,9 +10,9 @@ export function Navbar() {
           <LogoLockup />
         </Link>
         <nav className="hidden items-center gap-8 md:flex">
-          <a href="#producto" className="text-sm text-text-muted hover:text-text">
-            Producto
-          </a>
+          <Link href="/screener" className="text-sm text-text-muted hover:text-text">
+            Screener
+          </Link>
           <a href="#precios" className="text-sm text-text-muted hover:text-text">
             Precios
           </a>

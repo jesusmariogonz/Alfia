@@ -5,9 +5,7 @@ const PROTECTED_PREFIXES = [
   "/dashboard",
   "/chat",
   "/creditos",
-  "/screener",
   "/watchlist",
-  "/activos",
   "/portafolio",
 ];
 const AUTH_PAGES = ["/login", "/registro"];
