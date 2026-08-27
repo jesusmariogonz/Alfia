@@ -36,6 +36,7 @@ export const UNIVERSE: UniverseAsset[] = [
   { symbol: "ETH", name: "Ethereum", sector: "Cripto", assetClass: "cripto", basePrice: 3012, annualDrift: 0.18, annualVolatility: 0.75 },
   { symbol: "GLD", name: "SPDR Gold Shares", sector: "Refugio (oro)", assetClass: "etf", basePrice: 245.80, annualDrift: 0.09, annualVolatility: 0.14 },
   { symbol: "USO", name: "United States Oil Fund", sector: "Energía (petróleo)", assetClass: "etf", basePrice: 74.30, annualDrift: 0.03, annualVolatility: 0.34 },
+  { symbol: "TLT", name: "iShares 20+ Year Treasury Bond ETF", sector: "Refugio (bonos)", assetClass: "etf", basePrice: 92.50, annualDrift: 0.02, annualVolatility: 0.15 },
 ];
 
 export function findAsset(symbol: string): UniverseAsset | undefined {

@@ -2,8 +2,18 @@ import { getCloses, UNIVERSE, type Candle } from "@/lib/market-data";
 import { dailyReturns, annualizedVolatility } from "./metrics";
 
 const INDEX_SYMBOLS = ["SPY", "QQQ"];
-const SAFE_HAVEN_SYMBOL = "GLD";
-const OIL_SYMBOL = "USO";
+const BOND_SYMBOL = "TLT"; // refugio seguro real (igual que CNN: bonos, no oro)
+const GOLD_SYMBOL = "GLD"; // señal complementaria, no está en el índice original de CNN
+const OIL_SYMBOL = "USO"; // solo para el texto explicativo, no pondera el score
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+/** Normaliza un valor a un sub-score 0-100 dado el rango que se considera "normal". */
+function toSubScore(value: number, min: number, max: number): number {
+  return clamp(((value - min) / (max - min)) * 100, 0, 100);
+}
 
 function cumulativeReturn(closes: Candle[], days: number): number {
   const end = closes[closes.length - 1].close;
@@ -11,8 +21,9 @@ function cumulativeReturn(closes: Candle[], days: number): number {
   return end / start - 1;
 }
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
+function sma(closes: Candle[], days: number): number {
+  const window = closes.slice(-days);
+  return window.reduce((sum, c) => sum + c.close, 0) / window.length;
 }
 
 export type MarketSentiment = {
@@ -20,11 +31,11 @@ export type MarketSentiment = {
   label: "Miedo extremo" | "Temeroso" | "Cauteloso" | "Optimista" | "Codicia extrema";
   summary: string;
   indicators: {
-    indexMomentum20d: number;
-    volatilityRatio: number;
-    safeHavenSpread20d: number;
-    oilMove20d: number;
-    breadthPositivePct: number;
+    momentum: number;
+    priceStrength: number;
+    volatility: number;
+    safeHavenDemand: number;
+    breadth: number;
   };
 };
 
@@ -37,79 +48,119 @@ function labelFor(score: number): MarketSentiment["label"] {
 }
 
 /**
- * Sentimiento de mercado 0-100, inspirado en la lógica del "Fear & Greed
- * Index" de CNN pero simplificado a lo que se puede calcular con nuestro
- * universo: momentum de los índices, volatilidad realizada vs su propio
- * nivel base, flujo hacia refugios seguros (oro) y movimiento del petróleo,
- * más qué tan amplia es la subida/bajada en el resto del universo. Es un
- * heurístico de reglas — no reemplaza indicadores reales de mercado como
- * el VIX o el put/call ratio, que Alfia no tiene acceso a día de hoy.
+ * Sentimiento de mercado 0-100, homologado con la metodología del "Fear &
+ * Greed Index" de CNN: varios indicadores con el MISMO peso cada uno,
+ * cada uno normalizado según qué tanto se desvía de su propio promedio
+ * (no ajustes arbitrarios). CNN usa 7 indicadores; Alfia puede calcular 5
+ * de esos 7 con los datos disponibles:
+ *
+ *   1. Momentum      — precio del índice vs su propia media de 125 días.
+ *   2. Fortaleza      — % de activos del universo cerca de su máximo de 1
+ *                        año vs cerca de su mínimo (proxy de "52-week highs
+ *                        vs lows" de CNN, que usa todo el NYSE).
+ *   3. Volatilidad    — volatilidad realizada reciente vs la propia de más
+ *                        largo plazo (proxy del VIX, que CNN sí tiene acceso
+ *                        directo).
+ *   4. Refugio seguro — bonos de largo plazo (TLT) vs índices en 20 días,
+ *                        igual que CNN (bonos, no oro).
+ *   5. Amplitud       — % del universo con retorno de 20 días positivo
+ *                        (proxy sin volumen del "McClellan Volume Summation
+ *                        Index" de CNN, que si usa volumen real de NYSE).
+ *
+ * Quedan fuera, por falta de datos: put/call options y demanda de junk
+ * bonds (ninguno de los dos tiene una fuente conectada hoy). El oro y el
+ * petróleo no son parte del índice de CNN — se usan aquí solo para el
+ * texto explicativo, no para el número, porque fueron el ejemplo concreto
+ * que pediste (guerra → sube petróleo → cae mercado → sube oro).
  */
 export async function computeMarketSentiment(): Promise<MarketSentiment | null> {
-  const indexCloses = await Promise.all(INDEX_SYMBOLS.map((s) => getCloses(s)));
-  const goldCloses = await getCloses(SAFE_HAVEN_SYMBOL);
-  const oilCloses = await getCloses(OIL_SYMBOL);
+  const [indexClosesRaw, bondCloses, goldCloses, oilCloses] = await Promise.all([
+    Promise.all(INDEX_SYMBOLS.map((s) => getCloses(s))),
+    getCloses(BOND_SYMBOL),
+    getCloses(GOLD_SYMBOL),
+    getCloses(OIL_SYMBOL),
+  ]);
 
-  if (indexCloses.some((c) => !c) || !goldCloses || !oilCloses) return null;
-  const validIndexCloses = indexCloses as Candle[][];
+  if (indexClosesRaw.some((c) => !c) || !bondCloses) return null;
+  const indexCloses = indexClosesRaw as Candle[][];
 
-  // 1. Momentum: retorno promedio de los índices en los últimos 20 días de trading.
-  const indexMomentum20d =
-    validIndexCloses.reduce((sum, closes) => sum + cumulativeReturn(closes, 20), 0) /
-    validIndexCloses.length;
+  // 1. Momentum: precio actual vs media de 125 días (o el histórico
+  // disponible si es más corto), promediado entre los índices.
+  const momentum =
+    indexCloses.reduce((sum, closes) => {
+      const last = closes[closes.length - 1].close;
+      const ma = sma(closes, Math.min(125, closes.length));
+      return sum + (last / ma - 1);
+    }, 0) / indexCloses.length;
+  const momentumScore = toSubScore(momentum, -0.08, 0.08);
 
-  // 2. Régimen de volatilidad: volatilidad realizada reciente (20d) de los
-  // índices vs su propia volatilidad de más largo plazo (todo el histórico
-  // disponible). >1 = más nerviosismo del habitual.
-  const recentVol =
-    validIndexCloses.reduce(
-      (sum, closes) => sum + annualizedVolatility(dailyReturns(closes.slice(-21))),
-      0,
-    ) / validIndexCloses.length;
-  const baselineVol =
-    validIndexCloses.reduce((sum, closes) => sum + annualizedVolatility(dailyReturns(closes)), 0) /
-    validIndexCloses.length;
-  const volatilityRatio = baselineVol > 0 ? recentVol / baselineVol : 1;
-
-  // 3. Refugio seguro: cuánto le está ganando el oro a los índices en 20
-  // días. Positivo y grande = dinero saliendo de acciones hacia oro = miedo.
-  const goldReturn20d = cumulativeReturn(goldCloses, 20);
-  const safeHavenSpread20d = goldReturn20d - indexMomentum20d;
-
-  // 4. Petróleo: un salto fuerte de petróleo junto con índices cayendo es la
-  // señal de "shock" (ej. geopolítico) que pediste — index buys momentum,
-  // this term especially penalizes an oil spike happening while stocks fall.
-  const oilMove20d = cumulativeReturn(oilCloses, 20);
-
-  // 5. Amplitud: qué porcentaje del universo tuvo un retorno de 20 días positivo.
-  const allCloses = await Promise.all(UNIVERSE.map((a) => getCloses(a.symbol)));
-  const validCloses = allCloses.filter((c): c is Candle[] => Boolean(c));
-  const breadthPositivePct =
-    validCloses.filter((c) => cumulativeReturn(c, 20) > 0).length / validCloses.length;
-
-  let score = 50;
-  score += clamp(indexMomentum20d * 300, -25, 25);
-  score += clamp((breadthPositivePct - 0.5) * 30, -15, 15);
-  score -= clamp(safeHavenSpread20d * 200, 0, 20);
-  score -= clamp((volatilityRatio - 1) * 40, 0, 20);
-  if (oilMove20d > 0.05 && indexMomentum20d < 0) {
-    score -= clamp(oilMove20d * 60, 0, 15);
+  // 2. Fortaleza: activos a <5% de su máximo de 1 año vs a <5% de su mínimo.
+  const allCloses = (await Promise.all(UNIVERSE.map((a) => getCloses(a.symbol)))).filter(
+    (c): c is Candle[] => Boolean(c),
+  );
+  let nearHigh = 0;
+  let nearLow = 0;
+  for (const closes of allCloses) {
+    const window = closes.slice(-252);
+    const last = window[window.length - 1].close;
+    const yearHigh = Math.max(...window.map((c) => c.close));
+    const yearLow = Math.min(...window.map((c) => c.close));
+    if (last >= yearHigh * 0.95) nearHigh++;
+    if (last <= yearLow * 1.05) nearLow++;
   }
-  score = Math.round(clamp(score, 0, 100));
+  const priceStrengthScore =
+    nearHigh + nearLow === 0 ? 50 : (nearHigh / (nearHigh + nearLow)) * 100;
 
+  // 3. Volatilidad: realizada reciente (21d) vs la propia de largo plazo.
+  const recentVol =
+    indexCloses.reduce((sum, closes) => sum + annualizedVolatility(dailyReturns(closes.slice(-21))), 0) /
+    indexCloses.length;
+  const baselineVol =
+    indexCloses.reduce((sum, closes) => sum + annualizedVolatility(dailyReturns(closes)), 0) /
+    indexCloses.length;
+  const volatilityRatio = baselineVol > 0 ? recentVol / baselineVol : 1;
+  // Ratio alto = más miedo = score bajo, por eso se invierte (100 - ...).
+  const volatilityScore = 100 - toSubScore(volatilityRatio, 0.7, 1.6);
+
+  // 4. Refugio seguro: retorno de 20 días de los índices menos el de bonos.
+  // Índices ganándole a bonos = apetito por riesgo = greed (score alto).
+  const indexReturn20d =
+    indexCloses.reduce((sum, closes) => sum + cumulativeReturn(closes, 20), 0) / indexCloses.length;
+  const bondReturn20d = cumulativeReturn(bondCloses, 20);
+  const safeHavenSpread = indexReturn20d - bondReturn20d;
+  const safeHavenScore = toSubScore(safeHavenSpread, -0.08, 0.08);
+
+  // 5. Amplitud: % del universo con retorno de 20 días positivo.
+  const breadthScore =
+    (allCloses.filter((c) => cumulativeReturn(c, 20) > 0).length / allCloses.length) * 100;
+
+  const score = Math.round(
+    (momentumScore + priceStrengthScore + volatilityScore + safeHavenScore + breadthScore) / 5,
+  );
   const label = labelFor(score);
 
   const notes: string[] = [];
-  if (Math.abs(indexMomentum20d) > 0.01) {
+  if (Math.abs(indexReturn20d) > 0.01) {
     notes.push(
-      `los índices ${indexMomentum20d >= 0 ? "subieron" : "cayeron"} ${(Math.abs(indexMomentum20d) * 100).toFixed(1)}% en 20 días`,
+      `los índices ${indexReturn20d >= 0 ? "subieron" : "cayeron"} ${(Math.abs(indexReturn20d) * 100).toFixed(1)}% en 20 días`,
     );
   }
-  if (safeHavenSpread20d > 0.02) {
-    notes.push(`el oro le ganó a los índices por ${(safeHavenSpread20d * 100).toFixed(1)} puntos — señal de refugio`);
+  if (bondReturn20d - indexReturn20d > 0.02) {
+    notes.push("los bonos le están ganando a las acciones — señal clásica de refugio ante el miedo");
   }
-  if (oilMove20d > 0.05 && indexMomentum20d < 0) {
-    notes.push(`el petróleo subió ${(oilMove20d * 100).toFixed(1)}% mientras los índices caían — posible shock de oferta`);
+  if (goldCloses) {
+    const goldReturn20d = cumulativeReturn(goldCloses, 20);
+    if (goldReturn20d - indexReturn20d > 0.02) {
+      notes.push(`el oro subió ${(goldReturn20d * 100).toFixed(1)}% más que los índices en 20 días`);
+    }
+  }
+  if (oilCloses) {
+    const oilReturn20d = cumulativeReturn(oilCloses, 20);
+    if (oilReturn20d > 0.05 && indexReturn20d < 0) {
+      notes.push(
+        `el petróleo subió ${(oilReturn20d * 100).toFixed(1)}% mientras los índices caían — posible shock de oferta`,
+      );
+    }
   }
   if (volatilityRatio > 1.15) {
     notes.push("la volatilidad reciente está por encima de lo habitual");
@@ -125,11 +176,11 @@ export async function computeMarketSentiment(): Promise<MarketSentiment | null> 
     label,
     summary,
     indicators: {
-      indexMomentum20d,
-      volatilityRatio,
-      safeHavenSpread20d,
-      oilMove20d,
-      breadthPositivePct,
+      momentum: momentumScore,
+      priceStrength: priceStrengthScore,
+      volatility: volatilityScore,
+      safeHavenDemand: safeHavenScore,
+      breadth: breadthScore,
     },
   };
 }
