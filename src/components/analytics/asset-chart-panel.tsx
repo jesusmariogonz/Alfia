@@ -71,7 +71,7 @@ export function AssetChartPanel({
   const windowed = timeframe === "1D" && intraday ? intraday : windowFor(timeframe, candles);
 
   return (
-    <div className="rounded-xl border border-border bg-surface p-6">
+    <div className="rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-2">
           {availableTimeframes.map((tf) => (

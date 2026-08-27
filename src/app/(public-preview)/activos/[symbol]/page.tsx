@@ -120,7 +120,7 @@ export default async function ActivoPage({
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {!user ? (
-          <div className="rounded-xl border border-border bg-surface p-5">
+          <div className="rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-5">
             <p className="text-sm font-medium text-text">Abrir posición</p>
             <p className="mt-1 text-xs text-text-muted">
               Crea una cuenta gratis para registrar cuánto tienes invertido y
@@ -138,7 +138,7 @@ export default async function ActivoPage({
         ) : (
           <PositionLocked />
         )}
-        <div className="rounded-xl border border-border bg-surface p-5">
+        <div className="rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-5">
           <div className="flex items-center gap-2">
             <p className="text-sm font-medium text-text">
               Simulaciones, comparaciones y recomendaciones

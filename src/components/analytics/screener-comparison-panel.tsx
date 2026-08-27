@@ -80,7 +80,7 @@ export function ScreenerComparisonPanel({
   }));
 
   return (
-    <div className="mt-6 rounded-xl border border-border bg-surface p-5">
+    <div className="mt-6 rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-2">
           {TIMEFRAMES.map((tf) => (

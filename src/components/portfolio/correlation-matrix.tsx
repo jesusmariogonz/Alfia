@@ -12,7 +12,7 @@ export function CorrelationMatrix({
   matrix: number[][];
 }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-border bg-surface">
+    <div className="overflow-x-auto rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)]">
       <table className="w-full min-w-[420px] text-center text-sm">
         <thead>
           <tr className="border-b border-border">

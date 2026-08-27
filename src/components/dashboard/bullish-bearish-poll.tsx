@@ -39,7 +39,7 @@ export function BullishBearishPoll({
   }
 
   return (
-    <div className="rounded-xl border border-border bg-surface p-5">
+    <div className="rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-5">
       <p className="text-sm font-medium text-text">¿Bullish o bearish para mañana?</p>
       <p className="mt-1 text-xs text-text-muted">
         La opinión de la comunidad de Alfia — no es una señal ni una recomendación.

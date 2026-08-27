@@ -67,7 +67,7 @@ export default async function ReportePage() {
       {deep && deep.highlights.length > 0 && (
         <section>
           <h2 className="font-display text-lg font-medium text-text">Lo más importante</h2>
-          <div className="mt-4 rounded-xl border border-border bg-surface p-6">
+          <div className="mt-4 rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-6">
             <ul className="flex flex-col gap-2 text-sm leading-relaxed text-text">
               {deep.highlights.map((line, i) => (
                 <li key={i}>· {line}</li>
@@ -82,7 +82,7 @@ export default async function ReportePage() {
           <h2 className="font-display text-lg font-medium text-text">Briefings de hoy</h2>
           <div className="mt-4 flex flex-col gap-4">
             {briefings.map((b) => (
-              <div key={b.id} className="rounded-xl border border-border bg-surface p-6">
+              <div key={b.id} className="rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-6">
                 <div className="flex items-center justify-between gap-4">
                   <p className="font-display font-medium text-text">{b.title}</p>
                   <span className="shrink-0 rounded-full border border-border px-2.5 py-0.5 text-xs text-text-muted">
@@ -106,7 +106,7 @@ export default async function ReportePage() {
         <h2 className="font-display text-lg font-medium text-text">Índices principales</h2>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {report.indices.map((idx) => (
-            <div key={idx.symbol} className="rounded-xl border border-border bg-surface p-5">
+            <div key={idx.symbol} className="rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-5">
               <p className="font-data text-sm text-text-muted">{idx.symbol} · {idx.name}</p>
               <div className="mt-2 flex items-baseline gap-3">
                 <span className="font-data text-2xl font-semibold text-text">
@@ -127,7 +127,7 @@ export default async function ReportePage() {
       {deep && deep.themes.length > 0 ? (
         <section>
           <h2 className="font-display text-lg font-medium text-text">Los temas que movieron al mercado</h2>
-          <div className="mt-4 flex flex-col gap-4 rounded-xl border border-border bg-surface p-6">
+          <div className="mt-4 flex flex-col gap-4 rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-6">
             {deep.themes.map((paragraph, i) => (
               <p key={i} className="text-sm leading-relaxed text-text">
                 {paragraph}
@@ -139,7 +139,7 @@ export default async function ReportePage() {
       ) : (
         <section>
           <h2 className="font-display text-lg font-medium text-text">Qué pasó y qué esperar</h2>
-          <div className="mt-4 rounded-xl border border-border bg-surface p-6">
+          <div className="mt-4 rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-6">
             <ol className="flex flex-col gap-2 text-sm leading-relaxed text-text-muted">
               {report.narrative.map((line, i) => (
                 <li key={i}>{i + 1}. {line}</li>
@@ -182,7 +182,7 @@ export default async function ReportePage() {
         {deep?.sectorTake && (
           <p className="mt-3 text-sm leading-relaxed text-text-muted">{deep.sectorTake}</p>
         )}
-        <div className="mt-4 overflow-x-auto rounded-xl border border-border bg-surface">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)]">
           <table className="w-full min-w-[420px] text-left text-sm">
             <thead>
               <tr className="border-b border-border text-text-muted">
@@ -234,19 +234,19 @@ export default async function ReportePage() {
       <section>
         <h2 className="font-display text-lg font-medium text-text">Refugio y materias primas</h2>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-xl border border-border bg-surface p-5">
+          <div className="rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-5">
             <p className="text-xs text-text-muted">Bonos largo plazo (TLT)</p>
             <p className={`mt-1 font-data text-lg font-semibold ${report.bondChangePct !== null ? tone(report.bondChangePct) : "text-text"}`}>
               {report.bondChangePct !== null ? pct(report.bondChangePct, 2) : "—"}
             </p>
           </div>
-          <div className="rounded-xl border border-border bg-surface p-5">
+          <div className="rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-5">
             <p className="text-xs text-text-muted">Oro (GLD)</p>
             <p className={`mt-1 font-data text-lg font-semibold ${report.goldChangePct !== null ? tone(report.goldChangePct) : "text-text"}`}>
               {report.goldChangePct !== null ? pct(report.goldChangePct, 2) : "—"}
             </p>
           </div>
-          <div className="rounded-xl border border-border bg-surface p-5">
+          <div className="rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-5">
             <p className="text-xs text-text-muted">Petróleo (USO)</p>
             <p className={`mt-1 font-data text-lg font-semibold ${report.oilChangePct !== null ? tone(report.oilChangePct) : "text-text"}`}>
               {report.oilChangePct !== null ? pct(report.oilChangePct, 2) : "—"}
@@ -277,7 +277,7 @@ export default async function ReportePage() {
                 <h2 className="font-display text-lg font-medium text-text">
                   Enfoque para swing trading
                 </h2>
-                <div className="mt-4 flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
+                <div className="mt-4 flex flex-col gap-2 rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-5">
                   {deep.swingTake.map((p, i) => (
                     <p key={i} className="text-sm leading-relaxed text-text-muted">
                       {p}
@@ -291,7 +291,7 @@ export default async function ReportePage() {
                 <h2 className="font-display text-lg font-medium text-text">
                   Enfoque para largo plazo
                 </h2>
-                <div className="mt-4 flex flex-col gap-2 rounded-xl border border-border bg-surface p-5">
+                <div className="mt-4 flex flex-col gap-2 rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-5">
                   {deep.longTermTake.map((p, i) => (
                     <p key={i} className="text-sm leading-relaxed text-text-muted">
                       {p}
@@ -305,7 +305,7 @@ export default async function ReportePage() {
           {deep.calendar.length > 0 && (
             <section>
               <h2 className="font-display text-lg font-medium text-text">Qué vigilar próximamente</h2>
-              <div className="mt-4 flex flex-col gap-2 rounded-xl border border-border bg-surface p-6">
+              <div className="mt-4 flex flex-col gap-2 rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-6">
                 {deep.calendar.map((line, i) => (
                   <p key={i} className="text-sm leading-relaxed text-text-muted">
                     · {line}

@@ -31,7 +31,7 @@ export default async function PortafolioPage() {
     return (
       <div>
         <h1 className="font-display text-2xl font-semibold text-text">Mi Portafolio</h1>
-        <div className="mt-6 flex flex-col items-center gap-4 rounded-xl border border-border bg-surface p-12 text-center">
+        <div className="mt-6 flex flex-col items-center gap-4 rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-12 text-center">
           <p className="font-display text-lg font-medium text-text">
             Todavía no tienes posiciones abiertas
           </p>
@@ -95,7 +95,7 @@ export default async function PortafolioPage() {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-border bg-surface">
+      <div className="overflow-x-auto rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)]">
         <table className="w-full min-w-[820px] text-left text-sm">
           <thead>
             <tr className="border-b border-border text-text-muted">

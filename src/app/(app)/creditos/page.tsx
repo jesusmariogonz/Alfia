@@ -137,7 +137,7 @@ export default async function CreditosPage({
           {Object.values(CREDIT_PACKAGES).map((pkg) => (
             <div
               key={pkg.id}
-              className="flex flex-col rounded-xl border border-border bg-surface p-5"
+              className="flex flex-col rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-5"
             >
               <p className="font-data text-xl font-semibold text-text">
                 {pkg.credits.toLocaleString("es")}
@@ -162,7 +162,7 @@ export default async function CreditosPage({
         <h2 className="font-display text-lg font-medium text-text">
           Historial de transacciones
         </h2>
-        <div className="mt-4 overflow-hidden rounded-xl border border-border bg-surface">
+        <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)]">
           {!transactions || transactions.length === 0 ? (
             <p className="p-6 text-sm text-text-muted">
               Todavía no tienes transacciones. Cuando hagas tu primera consulta a la

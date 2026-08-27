@@ -81,7 +81,7 @@ export default async function DashboardPage() {
             initialBearish={bearishCount}
           />
         </div>
-        <div className="mt-4 rounded-xl border border-border bg-surface p-6">
+        <div className="mt-4 rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-6">
           <h2 className="font-display text-lg font-medium text-text">
             Resumen del mercado
           </h2>
@@ -138,7 +138,7 @@ export default async function DashboardPage() {
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-xl border border-border bg-surface p-5 transition-colors hover:border-green-bright/40"
+              className="rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-5 transition-colors hover:border-green-bright/40"
             >
               <p className="font-display font-medium text-text">{link.label}</p>
               <p className="mt-1.5 text-xs text-text-muted">{link.description}</p>

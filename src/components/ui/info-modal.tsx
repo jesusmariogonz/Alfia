@@ -29,7 +29,7 @@ export function InfoModal({
           onClick={() => setOpen(false)}
         >
           <div
-            className="max-h-[80vh] w-full max-w-md overflow-y-auto rounded-xl border border-border bg-surface p-6"
+            className="max-h-[80vh] w-full max-w-md overflow-y-auto rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">

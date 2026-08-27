@@ -32,7 +32,7 @@ export function QuoteStats({ closes }: { closes: Candle[] }) {
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-x-6 gap-y-3 rounded-xl border border-border bg-surface p-5 sm:grid-cols-3">
+    <div className="grid grid-cols-2 gap-x-6 gap-y-3 rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-5 sm:grid-cols-3">
       {items.map((item) => (
         <div key={item.label} className="flex items-center justify-between gap-3 border-b border-border pb-2 sm:border-none sm:pb-0">
           <p className="text-xs text-text-muted">{item.label}</p>

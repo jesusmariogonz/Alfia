@@ -65,7 +65,7 @@ export function ChatPanel({ initialBalance }: { initialBalance: number }) {
   }
 
   return (
-    <div className="flex h-[calc(100vh-10rem)] flex-col rounded-xl border border-border bg-surface">
+    <div className="flex h-[calc(100vh-10rem)] flex-col rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)]">
       <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-6">
         {messages.length === 0 && (
           <div className="flex h-full flex-col items-center justify-center text-center">
@@ -101,7 +101,7 @@ export function ChatPanel({ initialBalance }: { initialBalance: number }) {
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="rounded-xl border border-border bg-surface-2 px-4 py-3 text-sm text-text-muted">
+            <div className="rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)]-2 px-4 py-3 text-sm text-text-muted">
               Analizando…
             </div>
           </div>
