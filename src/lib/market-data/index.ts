@@ -1,6 +1,9 @@
 import { findAsset, UNIVERSE, type UniverseAsset } from "./universe";
 import { getHistoricalCloses, type Candle } from "./synthetic";
-import { fetchQuote, fetchDailyCandles } from "./finnhub";
+import { fetchQuote, fetchDailyCandles, fetchMarketNews } from "./finnhub";
+
+export { fetchMarketNews };
+export type { FinnhubNewsArticle } from "./finnhub";
 import { cached } from "./cache";
 
 export type { UniverseAsset, AssetClass } from "./universe";

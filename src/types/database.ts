@@ -35,6 +35,18 @@ export type WatchlistItem = {
   created_at: string;
 };
 
+export type NewsItem = {
+  id: string;
+  external_id: string;
+  title: string;
+  url: string;
+  source: string;
+  summary: string | null;
+  sentiment: "positivo" | "negativo" | "neutral";
+  published_at: string;
+  created_at: string;
+};
+
 export type CreditTransaction = {
   id: string;
   user_id: string;

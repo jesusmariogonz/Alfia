@@ -1,65 +1,71 @@
+import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
+import type { NewsItem } from "@/types/database";
 
-type NewsItem = {
-  title: string;
-  source: string;
-  sentiment: "positivo" | "negativo" | "neutral";
-};
-
-const items: NewsItem[] = [
-  {
-    title: "La Fed mantiene tasas sin cambios y sugiere recortes graduales para 2026",
-    source: "Reuters",
-    sentiment: "positivo",
-  },
-  {
-    title: "Ventas al menudeo en EE.UU. caen más de lo esperado en julio",
-    source: "Bloomberg",
-    sentiment: "negativo",
-  },
-  {
-    title: "Resultados mixtos en el sector tecnológico durante la temporada de reportes",
-    source: "MarketWatch",
-    sentiment: "neutral",
-  },
-];
-
-const sentimentTone: Record<NewsItem["sentiment"], "green" | "neutral"> = {
+const SENTIMENT_TONE: Record<NewsItem["sentiment"], "green" | "neutral"> = {
   positivo: "green",
   negativo: "neutral",
   neutral: "neutral",
 };
 
-export function NewsFeed({ limit }: { limit?: number } = {}) {
-  const visible = limit ? items.slice(0, limit) : items;
+const SENTIMENT_TEXT_COLOR: Record<NewsItem["sentiment"], string> = {
+  positivo: "text-data-up",
+  negativo: "text-data-down",
+  neutral: "text-text-muted",
+};
+
+function relativeTime(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const hours = Math.floor(diffMs / (60 * 60 * 1000));
+  if (hours < 1) return "hace unos minutos";
+  if (hours < 24) return `hace ${hours}h`;
+  const days = Math.floor(hours / 24);
+  return `hace ${days}d`;
+}
+
+export async function NewsFeed({ limit }: { limit?: number } = {}) {
+  const supabase = await createClient();
+  const { data: news } = await supabase
+    .from("news_items")
+    .select("*")
+    .order("published_at", { ascending: false })
+    .limit(limit ?? 20)
+    .returns<NewsItem[]>();
+
+  if (!news || news.length === 0) {
+    return (
+      <div className="rounded-xl border border-border bg-surface p-6 text-sm text-text-muted">
+        Todavía no hay noticias cargadas — se actualizan automáticamente varias
+        veces al día.
+      </div>
+    );
+  }
+
   return (
     <div className="divide-y divide-border rounded-xl border border-border bg-surface">
-      {visible.map((item) => (
-        <div key={item.title} className="flex items-start justify-between gap-4 p-5">
-          <div>
+      {news.map((item) => (
+        <a
+          key={item.id}
+          href={item.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex flex-col gap-1.5 p-5 transition-colors hover:bg-surface-2"
+        >
+          <div className="flex items-start justify-between gap-4">
             <p className="text-sm font-medium text-text">{item.title}</p>
-            <p className="mt-1 text-xs text-text-muted">{item.source}</p>
+            <Badge tone={SENTIMENT_TONE[item.sentiment]}>
+              <span className={SENTIMENT_TEXT_COLOR[item.sentiment]}>{item.sentiment}</span>
+            </Badge>
           </div>
-          <Badge
-            tone={
-              item.sentiment === "negativo"
-                ? "neutral"
-                : sentimentTone[item.sentiment]
-            }
-          >
-            <span
-              className={
-                item.sentiment === "positivo"
-                  ? "text-data-up"
-                  : item.sentiment === "negativo"
-                    ? "text-data-down"
-                    : "text-text-muted"
-              }
-            >
-              {item.sentiment}
-            </span>
-          </Badge>
-        </div>
+          {item.summary && (
+            <p className="text-xs leading-relaxed text-text-muted line-clamp-2">
+              {item.summary}
+            </p>
+          )}
+          <p className="text-xs text-text-muted">
+            {item.source} · {relativeTime(item.published_at)}
+          </p>
+        </a>
       ))}
     </div>
   );

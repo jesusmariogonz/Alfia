@@ -46,6 +46,22 @@ export async function fetchQuote(symbol: string): Promise<FinnhubQuote | null> {
   return finnhubFetch<FinnhubQuote>("/quote", { symbol });
 }
 
+export type FinnhubNewsArticle = {
+  id: number;
+  headline: string;
+  source: string;
+  summary: string;
+  url: string;
+  datetime: number; // unix seconds
+  category: string;
+};
+
+/** Noticias generales de mercado (no filtradas por un solo símbolo). */
+export async function fetchMarketNews(): Promise<FinnhubNewsArticle[] | null> {
+  const data = await finnhubFetch<FinnhubNewsArticle[]>("/news", { category: "general" });
+  return data ?? null;
+}
+
 /**
  * Velas diarias de los últimos `days` días. Devuelve null si Finnhub no
  * tiene el símbolo, si no hay clave configurada, o ante cualquier error de
