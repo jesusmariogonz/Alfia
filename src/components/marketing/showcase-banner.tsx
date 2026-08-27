@@ -1,32 +1,20 @@
-/**
- * Banner de impacto, full-bleed, pensado para llevar una foto real de
- * Pexels de fondo (tonos verdes: mercados, pantallas de trading, ciudad de
- * noche, naturaleza/crecimiento). Mientras no haya foto, usa un gradiente
- * oscuro con textura de grid — se ve intencional por sí solo.
- *
- * Para poner la foto real: agrega la imagen a /public/marketing/showcase.jpg
- * y reemplaza el <div className="absolute inset-0 ..."> de abajo por
- * <Image src="/marketing/showcase.jpg" alt="" fill className="object-cover" />
- * antes del overlay.
- */
+import Image from "next/image";
+
 export function ShowcaseBanner() {
   return (
     <section className="relative isolate overflow-hidden border-y border-border">
+      <Image
+        src="/marketing/showcase.jpg"
+        alt="Bosque visto desde arriba"
+        fill
+        className="-z-20 object-cover"
+      />
       <div
         aria-hidden
         className="absolute inset-0 -z-10"
         style={{
           background:
-            "linear-gradient(115deg, #0f2318 0%, #14171a 45%, #14171a 55%, #1a2a20 100%)",
-        }}
-      />
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10 opacity-20"
-        style={{
-          backgroundImage:
-            "radial-gradient(1px 1px at 10% 20%, var(--green-bright) 0, transparent 60%), radial-gradient(1px 1px at 80% 60%, var(--green-bright) 0, transparent 60%), radial-gradient(1px 1px at 40% 80%, var(--gold) 0, transparent 60%)",
-          backgroundSize: "200px 200px",
+            "linear-gradient(100deg, rgba(15,23,24,0.94) 0%, rgba(15,23,24,0.85) 45%, rgba(15,35,24,0.55) 100%)",
         }}
       />
 
