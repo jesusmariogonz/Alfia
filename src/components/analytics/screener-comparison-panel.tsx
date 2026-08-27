@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { NormalizedLineChart, CandlestickChart } from "@/components/analytics/price-chart";
 import { InfoModal } from "@/components/ui/info-modal";
+import { isFreePlan, canUseChat } from "@/lib/plan";
 import type { ScreenerRow } from "@/components/analytics/screener-table";
 import type { Plan } from "@/types/database";
 
@@ -66,10 +67,10 @@ export function ScreenerComparisonPanel({
     );
   }
 
-  const isFree = plan === "free";
+  const isFree = isFreePlan(plan);
   const canPickOverlays = !isFree;
   const canUseCandles = !isFree && selectedRows.length === 1;
-  const canExportCsv = plan === "pro";
+  const canExportCsv = canUseChat(plan);
   const activeOverlays: ("sma20" | "sma50")[] = isFree
     ? ["sma20"]
     : (["sma20", "sma50"] as const).filter((k) => overlays[k]);

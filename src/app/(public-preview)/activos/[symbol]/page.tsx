@@ -11,7 +11,7 @@ import { RiskMetricsGrid } from "@/components/analytics/risk-metrics-grid";
 import { WatchlistToggleButton } from "@/components/analytics/watchlist-toggle-button";
 import { PositionForm } from "@/components/portfolio/position-form";
 import { PositionLocked } from "@/components/portfolio/position-locked";
-import { canOpenPositions } from "@/lib/plan";
+import { canOpenPositions, canUseChat } from "@/lib/plan";
 import { Badge } from "@/components/ui/badge";
 import { InfoModal } from "@/components/ui/info-modal";
 import { Button } from "@/components/ui/button";
@@ -151,11 +151,11 @@ export default async function ActivoPage({
             comprar {asset.symbol}?&rdquo;.
           </p>
           <Link
-            href={profile?.plan === "pro" ? "/chat" : "/creditos"}
+            href={canUseChat(profile?.plan ?? "free") ? "/chat" : "/creditos"}
             className="mt-3 inline-block"
           >
             <Button variant="secondary">
-              {profile?.plan === "pro" ? "Ir al chat" : "Ver planes"}
+              {canUseChat(profile?.plan ?? "free") ? "Ir al chat" : "Ver planes"}
             </Button>
           </Link>
         </div>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { NormalizedLineChart, CandlestickChart } from "@/components/analytics/price-chart";
 import { InfoModal } from "@/components/ui/info-modal";
+import { isFreePlan } from "@/lib/plan";
 import type { Candle } from "@/lib/market-data";
 import type { Plan } from "@/types/database";
 
@@ -61,8 +62,8 @@ export function AssetChartPanel({
   const [valueMode, setValueMode] = useState<"percent" | "price">("price");
   const [scale, setScale] = useState<"linear" | "log">("linear");
 
-  const canPickOverlays = plan !== "free";
-  const canUseCandles = plan !== "free";
+  const canPickOverlays = !isFreePlan(plan);
+  const canUseCandles = !isFreePlan(plan);
   const activeOverlays: ("sma20" | "sma50")[] = canPickOverlays
     ? (["sma20", "sma50"] as const).filter((k) => overlays[k])
     : ["sma20"];
@@ -206,7 +207,7 @@ export function AssetChartPanel({
         </div>
       </div>
 
-      {plan === "free" && (
+      {isFreePlan(plan) && (
         <p className="mt-3 text-xs text-gold">
           Plan Free: línea + media de 20 días. Con Básico o Pro desbloqueas velas y
           la media de 50 días.

@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { ScreenerTable, type ScreenerRow } from "@/components/analytics/screener-table";
 import { ScreenerComparisonPanel } from "@/components/analytics/screener-comparison-panel";
+import { isFreePlan } from "@/lib/plan";
 import type { Plan } from "@/types/database";
 
 const FREE_MAX_COMPARE = 3;
 
 export function ScreenerClient({ rows, plan }: { rows: ScreenerRow[]; plan: Plan }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const maxSelectable = plan === "free" ? FREE_MAX_COMPARE : null;
+  const maxSelectable = isFreePlan(plan) ? FREE_MAX_COMPARE : null;
 
   function toggle(symbol: string) {
     setSelected((prev) => {
