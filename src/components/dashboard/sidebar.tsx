@@ -1,15 +1,6 @@
 import Link from "next/link";
 import { LogoLockup } from "@/components/brand/logo-lockup";
-
-const links = [
-  { href: "/dashboard", label: "Resumen" },
-  { href: "/portafolio", label: "Mi Portafolio" },
-  { href: "/chat", label: "Chat de inversión" },
-  { href: "/screener", label: "Screener" },
-  { href: "/watchlist", label: "Watchlist" },
-  { href: "/aprende", label: "Aprende" },
-  { href: "/creditos", label: "Créditos" },
-];
+import { NAV_LINKS } from "@/components/dashboard/nav-links";
 
 export function Sidebar() {
   return (
@@ -18,7 +9,7 @@ export function Sidebar() {
         <LogoLockup size={24} />
       </Link>
       <nav className="flex flex-col gap-1">
-        {links.map((link) => (
+        {NAV_LINKS.map((link) => (
           <Link
             key={link.href}
             href={link.href}
