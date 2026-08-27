@@ -1,6 +1,14 @@
 import { computeDailyReport } from "@/lib/analytics/daily-report";
 import { MarketSentimentBanner } from "@/components/dashboard/market-sentiment-banner";
 import { Disclaimer } from "@/components/ui/disclaimer";
+import { createClient } from "@/lib/supabase/server";
+import type { MarketBriefing } from "@/types/database";
+
+const BRIEFING_LABEL: Record<MarketBriefing["type"], string> = {
+  apertura: "Apertura",
+  intradia: "A media sesión",
+  cierre: "Cierre",
+};
 
 function pct(n: number, digits = 1) {
   return `${n >= 0 ? "+" : ""}${(n * 100).toFixed(digits)}%`;
@@ -12,6 +20,17 @@ function tone(n: number) {
 
 export default async function ReportePage() {
   const report = await computeDailyReport();
+
+  const supabase = await createClient();
+  const startOfDay = new Date();
+  startOfDay.setUTCHours(0, 0, 0, 0);
+  const { data: briefings } = await supabase
+    .from("market_briefings")
+    .select("*")
+    .gte("created_at", startOfDay.toISOString())
+    .order("created_at", { ascending: true })
+    .returns<MarketBriefing[]>();
+
   const today = new Intl.DateTimeFormat("es", {
     weekday: "long",
     day: "numeric",
@@ -33,6 +52,33 @@ export default async function ReportePage() {
 
       {report.sentiment && (
         <MarketSentimentBanner sentiment={report.sentiment} />
+      )}
+
+      {briefings && briefings.length > 0 && (
+        <section>
+          <h2 className="font-display text-lg font-medium text-text">
+            Briefings de hoy
+          </h2>
+          <div className="mt-4 flex flex-col gap-4">
+            {briefings.map((b) => (
+              <div key={b.id} className="rounded-xl border border-border bg-surface p-6">
+                <div className="flex items-center justify-between gap-4">
+                  <p className="font-display font-medium text-text">{b.title}</p>
+                  <span className="shrink-0 rounded-full border border-border px-2.5 py-0.5 text-xs text-text-muted">
+                    {BRIEFING_LABEL[b.type]}
+                  </span>
+                </div>
+                <div className="mt-3 flex flex-col gap-2">
+                  {b.content.map((paragraph, i) => (
+                    <p key={i} className="text-sm leading-relaxed text-text-muted">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
 
       <section>

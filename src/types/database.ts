@@ -46,6 +46,17 @@ export type Tutorial = {
   created_at: string;
 };
 
+export type BriefingType = "apertura" | "intradia" | "cierre";
+
+export type MarketBriefing = {
+  id: string;
+  type: BriefingType;
+  title: string;
+  content: string[];
+  refers_to: string | null;
+  created_at: string;
+};
+
 export type NewsItem = {
   id: string;
   external_id: string;

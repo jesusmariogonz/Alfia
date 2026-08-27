@@ -1,0 +1,44 @@
+name: Cron - briefings de mercado (apertura / intradia / cierre)
+
+on:
+  schedule:
+    # NYSE/NASDAQ: 9:30am-4:00pm hora del Este (ET). Los horarios de abajo
+    # están en horario de verano de EE.UU. (EDT, UTC-4), vigente
+    # mar-nov aprox. — en horario estándar (EST, UTC-5, nov-mar) todo esto
+    # dispara 1 hora más tarde en hora local de EE.UU. Si eso te molesta,
+    # súmale 1 hora a estos horarios entre noviembre y marzo.
+    - cron: "10 13 * * 1-5"  # 9:10am ET (EDT) — 20 min antes de abrir
+    - cron: "30 16 * * 1-5"  # 12:30pm ET (EDT) — a media sesión, solo si hay algo relevante
+    - cron: "40 19 * * 1-5"  # 3:40pm ET (EDT) — 20 min antes de cerrar
+  workflow_dispatch:
+    inputs:
+      type:
+        description: "Tipo de briefing a disparar manualmente"
+        required: true
+        type: choice
+        options: [apertura, intradia, cierre]
+
+jobs:
+  apertura:
+    if: github.event_name == 'schedule' && github.event.schedule == '10 13 * * 1-5' || (github.event_name == 'workflow_dispatch' && github.event.inputs.type == 'apertura')
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -sSf -X GET "${{ secrets.ALFIA_SITE_URL }}/api/cron/briefing?type=apertura" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+
+  intradia:
+    if: github.event_name == 'schedule' && github.event.schedule == '30 16 * * 1-5' || (github.event_name == 'workflow_dispatch' && github.event.inputs.type == 'intradia')
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -sSf -X GET "${{ secrets.ALFIA_SITE_URL }}/api/cron/briefing?type=intradia" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+
+  cierre:
+    if: github.event_name == 'schedule' && github.event.schedule == '40 19 * * 1-5' || (github.event_name == 'workflow_dispatch' && github.event.inputs.type == 'cierre')
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -sSf -X GET "${{ secrets.ALFIA_SITE_URL }}/api/cron/briefing?type=cierre" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
