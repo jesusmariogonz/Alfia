@@ -1,12 +1,20 @@
 import Link from "next/link";
-import { TUTORIALS } from "@/lib/content/tutoriales";
+import { createClient } from "@/lib/supabase/server";
+import type { Tutorial } from "@/types/database";
 
 export const metadata = {
   title: "Aprende — Alfia",
   description: "Glosario y tutoriales cortos para entender inversión, trading y análisis de mercado.",
 };
 
-export default function AprendePage() {
+export default async function AprendePage() {
+  const supabase = await createClient();
+  const { data: tutorials } = await supabase
+    .from("tutorials")
+    .select("*")
+    .order("published_at", { ascending: false })
+    .returns<Tutorial[]>();
+
   return (
     <div>
       <h1 className="font-display text-3xl font-semibold tracking-tight text-text">
@@ -32,7 +40,7 @@ export default function AprendePage() {
         <div>
           <h2 className="font-display text-lg font-medium text-text">Tutoriales</h2>
           <div className="mt-4 flex flex-col gap-4">
-            {TUTORIALS.map((tutorial) => (
+            {(tutorials ?? []).map((tutorial) => (
               <Link
                 key={tutorial.slug}
                 href={`/aprende/tutoriales/${tutorial.slug}`}

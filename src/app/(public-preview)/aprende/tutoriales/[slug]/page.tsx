@@ -1,9 +1,16 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { findTutorial, TUTORIALS } from "@/lib/content/tutoriales";
+import { createClient } from "@/lib/supabase/server";
+import type { Tutorial } from "@/types/database";
 
-export function generateStaticParams() {
-  return TUTORIALS.map((t) => ({ slug: t.slug }));
+async function findTutorial(slug: string): Promise<Tutorial | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("tutorials")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle<Tutorial>();
+  return data ?? null;
 }
 
 export async function generateMetadata({
@@ -12,7 +19,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const tutorial = findTutorial(slug);
+  const tutorial = await findTutorial(slug);
   return {
     title: tutorial ? `${tutorial.title} — Alfia` : "Tutorial — Alfia",
     description: tutorial?.summary,
@@ -25,7 +32,7 @@ export default async function TutorialPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const tutorial = findTutorial(slug);
+  const tutorial = await findTutorial(slug);
   if (!tutorial) notFound();
 
   return (

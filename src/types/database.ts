@@ -35,6 +35,17 @@ export type WatchlistItem = {
   created_at: string;
 };
 
+export type Tutorial = {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  minutes: number;
+  content: string[];
+  published_at: string;
+  created_at: string;
+};
+
 export type NewsItem = {
   id: string;
   external_id: string;
