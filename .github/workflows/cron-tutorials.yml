@@ -1,0 +1,19 @@
+name: Cron - tutorial nuevo en Aprende
+
+on:
+  schedule:
+    # El endpoint se auto-limita a publicar cada ~2 días (ver
+    # src/app/api/cron/tutorials/route.ts), así que llamarlo a diario aquí
+    # es seguro — la mayoría de los días no hace nada. Requiere los mismos
+    # secrets que cron-news.yml (ALFIA_SITE_URL, CRON_SECRET).
+    - cron: "0 14 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Llamar /api/cron/tutorials
+        run: |
+          curl -sSf -X GET "${{ secrets.ALFIA_SITE_URL }}/api/cron/tutorials" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

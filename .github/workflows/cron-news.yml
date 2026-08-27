@@ -1,0 +1,23 @@
+name: Cron - noticias de mercado
+
+on:
+  schedule:
+    # Vercel Cron en el plan Hobby solo permite 1 disparo al día, así que
+    # este workflow (gratis en GitHub Actions) llama al endpoint 3 veces al
+    # día en el horario real. Requiere los secrets ALFIA_SITE_URL y
+    # CRON_SECRET configurados en Settings → Secrets and variables →
+    # Actions de este repo (deben coincidir con las variables de entorno
+    # de Vercel).
+    - cron: "0 13 * * *"
+    - cron: "0 18 * * *"
+    - cron: "0 23 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Llamar /api/cron/news
+        run: |
+          curl -sSf -X GET "${{ secrets.ALFIA_SITE_URL }}/api/cron/news" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
