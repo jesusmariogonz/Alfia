@@ -73,17 +73,19 @@ export async function grantCredits(
 }
 
 /**
- * Costo en créditos por tipo de consulta. Mostrado al usuario antes de
- * enviar. Calibrado contra el costo real de tokens de cada feature (Haiku
- * 4.5 para chat, Sonnet 5 para montecarlo/comparador/backtest) para que el
- * cobro relativo entre features refleje su costo relativo real.
+ * Costo en créditos. `chat` es el costo base de cualquier mensaje del chat
+ * (Pro). Montecarlo/comparador/backtest/recomendación ya no son pantallas
+ * aparte — son herramientas que el chat invoca por su cuenta (ver
+ * `lib/ai/tools.ts`), y se cobran ENCIMA del costo base cuando el modelo
+ * decide usarlas, con un precio deliberadamente más alto (no solo el costo
+ * de tokens) porque son el análisis profundo que justifica el plan Pro.
  */
 export const CREDIT_COSTS: Record<QueryType, number> = {
   chat: 1,
   resumen_diario: 0,
-  montecarlo: 4,
-  comparador: 3,
+  montecarlo: 15,
+  comparador: 10,
   screener: 0, // filtro local, no invoca IA
-  backtest: 4,
-  recomendacion: 2,
+  backtest: 15,
+  recomendacion: 8,
 };

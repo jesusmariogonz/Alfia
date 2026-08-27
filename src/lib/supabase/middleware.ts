@@ -7,10 +7,7 @@ const PROTECTED_PREFIXES = [
   "/creditos",
   "/screener",
   "/watchlist",
-  "/comparar",
-  "/simulador",
   "/activos",
-  "/backtesting",
   "/portafolio",
 ];
 const AUTH_PAGES = ["/login", "/registro"];

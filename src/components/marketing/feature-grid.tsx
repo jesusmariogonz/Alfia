@@ -10,14 +10,14 @@ const features: Feature[] = [
       "Cada mañana, un resumen claro de lo que movió los mercados: índices, sectores y las noticias que más importan.",
   },
   {
-    title: "Chat de inversión con IA",
+    title: "Chat de inversión con IA (Pro)",
     description:
-      "Pregunta sobre activos, estrategias y conceptos financieros. Alfia responde solo dentro del tema — nada de tangentes.",
+      "Pregúntale lo que sea sobre tus activos y Alfia corre por su cuenta simulaciones de Montecarlo, comparaciones y backtests — todo en una conversación.",
   },
   {
-    title: "Simulador de Montecarlo",
+    title: "Mi Portafolio",
     description:
-      "Corre miles de escenarios sobre tu portafolio y recibe una interpretación en lenguaje natural de los resultados.",
+      "Reúne tus posiciones con su riesgo, retorno esperado y correlación entre ellas, en una sola vista.",
   },
   {
     title: "Feed de noticias con sentimiento",
@@ -25,9 +25,9 @@ const features: Feature[] = [
       "Noticias relevantes clasificadas como positivas, negativas o neutrales, para leer el mercado más rápido.",
   },
   {
-    title: "Comparador de activos",
+    title: "Screener de activos",
     description:
-      "Pon dos acciones lado a lado — fundamentales, desempeño y riesgo — y entiende las diferencias en segundos.",
+      "Filtra por tipo, retorno y volatilidad, y encuentra qué investigar más a fondo.",
   },
   {
     title: "Sistema de créditos transparente",

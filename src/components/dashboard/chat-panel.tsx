@@ -33,7 +33,8 @@ export function ChatPanel({ initialBalance }: { initialBalance: number }) {
 
     setError(null);
     setInsufficientCredits(false);
-    setMessages((prev) => [...prev, { role: "user", content: text }]);
+    const nextHistory = [...messages, { role: "user" as const, content: text }];
+    setMessages(nextHistory);
     setInput("");
     setLoading(true);
 
@@ -41,7 +42,7 @@ export function ChatPanel({ initialBalance }: { initialBalance: number }) {
       const res = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({ messages: nextHistory }),
       });
       const data = await res.json();
 
@@ -72,9 +73,9 @@ export function ChatPanel({ initialBalance }: { initialBalance: number }) {
               Pregunta sobre inversión, trading o mercados
             </p>
             <p className="mt-2 max-w-sm text-sm text-text-muted">
-              Por ejemplo: &ldquo;¿qué diferencia hay entre una acción de valor y
-              una de crecimiento?&rdquo; o &ldquo;explícame qué es la volatilidad
-              implícita&rdquo;.
+              Por ejemplo: &ldquo;¿qué pasaría si invierto $10,000 en AAPL a 1
+              año?&rdquo;, &ldquo;compara AAPL vs MSFT&rdquo; o &ldquo;debería
+              comprar TSLA?&rdquo; — Alfia corre el análisis por ti.
             </p>
           </div>
         )}
@@ -122,7 +123,7 @@ export function ChatPanel({ initialBalance }: { initialBalance: number }) {
             className="flex-1 rounded-lg border border-border bg-surface-2 px-3.5 py-2.5 text-sm text-text placeholder:text-text-muted focus:border-green-bright focus:outline-none"
           />
           <Button type="submit" disabled={loading || !input.trim()}>
-            Enviar · {CHAT_COST} crédito
+            Enviar · {CHAT_COST}+ créditos
           </Button>
         </form>
         <div className="mt-3 flex items-center justify-between">
@@ -131,6 +132,11 @@ export function ChatPanel({ initialBalance }: { initialBalance: number }) {
             Saldo: {balance.toLocaleString("es")} créditos
           </span>
         </div>
+        <p className="mt-1.5 text-xs text-text-muted">
+          {CHAT_COST} crédito por mensaje. Si Alfia corre un análisis más profundo
+          (simulación, comparación, backtest, recomendación) se cobra un costo
+          adicional por eso, no antes.
+        </p>
       </div>
     </div>
   );

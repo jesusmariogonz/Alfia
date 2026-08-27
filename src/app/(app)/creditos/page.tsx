@@ -82,25 +82,50 @@ export default async function CreditosPage({
             name="Free"
             price="$0"
             credits="20 créditos de bienvenida"
+            features={[
+              "Screener limitado (6 activos, sin indicadores)",
+              "Dashboard básico",
+              "Sin Mi Portafolio",
+              "Sin chat de IA",
+            ]}
             isCurrent={currentPlan === "free"}
           />
-          {Object.values(SUBSCRIPTION_PLANS).map((plan) => (
-            <PlanCard
-              key={plan.id}
-              name={plan.name}
-              price={`${centsToPrice(plan.priceCents)}/mes`}
-              credits={`${plan.monthlyCredits.toLocaleString("es")} créditos al mes`}
-              isCurrent={currentPlan === plan.id}
-              action={
-                currentPlan !== plan.id && (
-                  <CheckoutButton
-                    body={{ kind: "plan", id: plan.id }}
-                    label={`Elegir ${plan.name}`}
-                  />
-                )
-              }
-            />
-          ))}
+          <PlanCard
+            name="Básico"
+            price={`${centsToPrice(SUBSCRIPTION_PLANS.basico.priceCents)}/mes`}
+            credits={`${SUBSCRIPTION_PLANS.basico.monthlyCredits.toLocaleString("es")} créditos al mes`}
+            features={[
+              "Screener completo",
+              "Mi Portafolio (posiciones, riesgo, correlación)",
+              "Dashboard completo",
+              "Sin chat de IA",
+            ]}
+            isCurrent={currentPlan === "basico"}
+            action={
+              currentPlan !== "basico" && (
+                <CheckoutButton
+                  body={{ kind: "plan", id: "basico" }}
+                  label="Elegir Básico"
+                />
+              )
+            }
+          />
+          <PlanCard
+            name="Pro"
+            price={`${centsToPrice(SUBSCRIPTION_PLANS.pro.priceCents)}/mes`}
+            credits={`${SUBSCRIPTION_PLANS.pro.monthlyCredits.toLocaleString("es")} créditos al mes`}
+            features={[
+              "Todo lo de Básico",
+              "Chat de inversión con IA",
+              "El chat corre Montecarlo, comparaciones, backtests y recomendaciones por ti",
+            ]}
+            isCurrent={currentPlan === "pro"}
+            action={
+              currentPlan !== "pro" && (
+                <CheckoutButton body={{ kind: "plan", id: "pro" }} label="Elegir Pro" />
+              )
+            }
+          />
         </div>
       </section>
 
@@ -190,12 +215,14 @@ function PlanCard({
   name,
   price,
   credits,
+  features,
   isCurrent,
   action,
 }: {
   name: string;
   price: string;
   credits: string;
+  features: string[];
   isCurrent: boolean;
   action?: React.ReactNode;
 }) {
@@ -211,6 +238,13 @@ function PlanCard({
       </div>
       <p className="mt-2 font-data text-lg text-text">{price}</p>
       <p className="mt-1 text-xs text-gold">{credits}</p>
+      <ul className="mt-4 flex flex-col gap-1.5">
+        {features.map((feature) => (
+          <li key={feature} className="text-xs text-text-muted">
+            · {feature}
+          </li>
+        ))}
+      </ul>
       {action && <div className="mt-4">{action}</div>}
     </div>
   );

@@ -186,23 +186,45 @@ actualizar.
   (suscripciones + compra de créditos + webhook) ✅. Pendiente: el job que
   genera el resumen diario y las noticias reales (hoy son contenido de
   ejemplo).
-- **Fase 2 (completa)**: simulador de Montecarlo (`/simulador`, GBM con 2,000
-  simulaciones + interpretación en lenguaje natural) ✅, comparador de
-  activos (`/comparar`) ✅, screener con filtros por tipo/retorno/volatilidad
-  (`/screener`, sin costo en créditos) ✅, ficha de activo con métricas de
-  riesgo — retorno anualizado, volatilidad, Sharpe, máximo drawdown, VaR 95%
-  (`/activos/[symbol]`) ✅, watchlist persistida por usuario (`/watchlist`) ✅.
-  Pendiente: alertas por email/notificación (fase 2 original) — no se
-  implementó todavía porque requiere un proveedor de email y un job en
-  segundo plano (colas/cron) que aún no está configurado en el proyecto.
-- **Fase 3 (completa)**: backtesting simple de estrategias descritas en
-  lenguaje natural (`/backtesting`, IA extrae la estrategia y la corre contra
-  comprar-y-mantener) ✅, Alfia Score — rating propio 0-100 por activo,
-  visible en el screener y en la ficha de cada activo ✅, contenido
-  educativo público — glosario y tutoriales en `/aprende`, fuera del login,
-  pensado como gancho de SEO/tráfico orgánico ✅, newsletter semanal
-  automatizada con suscripción desde el footer de la landing y envío vía
-  cron ✅.
+- **Fase 2 (completa, luego rediseñada — ver abajo)**: screener con filtros
+  por tipo/retorno/volatilidad (`/screener`, sin costo en créditos) ✅, ficha
+  de activo con métricas de riesgo — retorno anualizado, volatilidad,
+  Sharpe, máximo drawdown, VaR 95% (`/activos/[symbol]`) ✅, watchlist
+  persistida por usuario (`/watchlist`) ✅. Pendiente: alertas por
+  email/notificación (fase 2 original) — no se implementó todavía porque
+  requiere un proveedor de email y un job en segundo plano (colas/cron) que
+  aún no está configurado en el proyecto.
+- **Fase 3 (completa, luego rediseñada — ver abajo)**: Alfia Score — rating
+  propio 0-100 por activo, visible en el screener y en la ficha de cada
+  activo ✅, contenido educativo público — glosario y tutoriales en
+  `/aprende`, fuera del login, pensado como gancho de SEO/tráfico orgánico
+  ✅, newsletter semanal automatizada con suscripción desde el footer de la
+  landing y envío vía cron ✅.
+
+### Rediseño: chat con herramientas + planes por funcionalidad
+
+Las pantallas dedicadas de Montecarlo, comparador y backtesting (que Fase 2
+y 3 habían construido como rutas separadas) se **eliminaron** y se
+reemplazaron por un chat de inversión (`/chat`, Pro) que las invoca como
+*tool use* de Claude bajo demanda — `src/lib/ai/tools.ts` define las 4
+herramientas (`run_montecarlo`, `compare_assets`, `run_backtest`,
+`get_recommendation`) y `src/app/api/ai/chat/route.ts` corre el loop
+agente-herramienta, cobrando créditos por herramienta usada (además del
+costo base del mensaje) cuando el modelo decide invocarla.
+
+Los planes ahora gatean **funcionalidad de producto**, no solo créditos
+(`src/lib/plan.ts` es la fuente única de verdad):
+
+| | Free | Básico | Pro |
+|---|---|---|---|
+| Screener | 6 de 15 activos, sin indicadores avanzados | Completo | Completo |
+| Mi Portafolio (posiciones, riesgo, correlación) | ❌ | ✅ | ✅ |
+| Dashboard | Reducido (1 noticia, sin tile de Portafolio) | Completo | Completo |
+| Chat de inversión (Montecarlo/comparador/backtest/recomendación) | ❌ | ❌ | ✅ |
+
+Los créditos (`src/lib/credits`) son la capa aparte de consumo de IA —
+disponibles para cualquier plan que tenga acceso a la feature que los
+gasta (hoy, en la práctica, solo el chat Pro).
 
 ### Pendientes de configuración (todas las fases)
 
@@ -219,10 +241,10 @@ para que cada pieza funcione en un entorno real:
    `/api/stripe/webhook` con los eventos `checkout.session.completed`,
    `invoice.payment_succeeded` y `customer.subscription.deleted`; completar
    `STRIPE_WEBHOOK_SECRET`.
-3. **IA (Anthropic)**: completar `ANTHROPIC_API_KEY`. Sin esta clave, el chat,
-   el simulador de Montecarlo, el comparador y el backtesting funcionan pero
-   devuelven un aviso de "IA no configurada" en vez de la interpretación en
-   lenguaje natural.
+3. **IA (Anthropic)**: completar `ANTHROPIC_API_KEY`. Sin esta clave, el chat
+   (Pro) funciona pero devuelve un aviso de "IA no configurada" en vez de la
+   respuesta real, y no puede invocar las herramientas de Montecarlo/
+   comparador/backtest/recomendación.
 4. **Datos de mercado**: ✅ integrado — completar `FINNHUB_API_KEY` (cuenta
    gratis en finnhub.io) activa precios/históricos reales para acciones y
    ETFs. Cripto sigue sintético (ver sección de arriba). Ojo con la nota

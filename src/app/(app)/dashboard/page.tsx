@@ -3,15 +3,22 @@ import { createClient } from "@/lib/supabase/server";
 import { NewsFeed } from "@/components/dashboard/news-feed";
 import { Disclaimer } from "@/components/ui/disclaimer";
 import { Badge } from "@/components/ui/badge";
-import { isFreePlan } from "@/lib/plan";
+import { isFreePlan, canUseChat } from "@/lib/plan";
 import type { Profile } from "@/types/database";
 
-const QUICK_LINKS = [
+type QuickLink = {
+  href: string;
+  label: string;
+  description: string;
+  plusOnly?: boolean;
+  proOnly?: boolean;
+};
+
+const QUICK_LINKS: QuickLink[] = [
   { href: "/portafolio", label: "Mi Portafolio", description: "Tus posiciones, riesgo y correlación reunidos", plusOnly: true },
   { href: "/screener", label: "Screener", description: "Filtra activos por retorno y riesgo" },
-  { href: "/comparar", label: "Comparador", description: "Compara dos activos lado a lado" },
-  { href: "/simulador", label: "Simulador Montecarlo", description: "Proyecta escenarios de inversión" },
   { href: "/watchlist", label: "Watchlist", description: "Sigue tus activos favoritos" },
+  { href: "/chat", label: "Chat de inversión", description: "Pregunta y corre análisis a demanda", proOnly: true },
 ];
 
 export default async function DashboardPage() {
@@ -25,8 +32,14 @@ export default async function DashboardPage() {
     .eq("id", user!.id)
     .single<Profile>();
 
-  const isFree = isFreePlan(profile?.plan ?? "free");
-  const quickLinks = isFree ? QUICK_LINKS.filter((l) => !l.plusOnly) : QUICK_LINKS;
+  const plan = profile?.plan ?? "free";
+  const isFree = isFreePlan(plan);
+  const hasChat = canUseChat(plan);
+  const quickLinks = QUICK_LINKS.filter((l) => {
+    if (l.plusOnly && isFree) return false;
+    if (l.proOnly && !hasChat) return false;
+    return true;
+  });
 
   const today = new Intl.DateTimeFormat("es", {
     weekday: "long",

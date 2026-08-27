@@ -7,7 +7,6 @@ import { computeAlfiaScore, scoreLabel } from "@/lib/analytics/score";
 import { Sparkline } from "@/components/analytics/sparkline";
 import { RiskMetricsGrid } from "@/components/analytics/risk-metrics-grid";
 import { WatchlistToggleButton } from "@/components/analytics/watchlist-toggle-button";
-import { RecommendationPanel } from "@/components/analytics/recommendation-panel";
 import { PositionForm } from "@/components/portfolio/position-form";
 import { PositionLocked } from "@/components/portfolio/position-locked";
 import { canOpenPositions } from "@/lib/plan";
@@ -97,19 +96,19 @@ export default async function ActivoPage({
         ) : (
           <PositionLocked />
         )}
-        <RecommendationPanel symbol={asset.symbol} />
-      </div>
-
-      <div className="flex flex-wrap gap-3">
-        <Link href={`/simulador?symbol=${asset.symbol}`}>
-          <Button>Simular con Montecarlo</Button>
-        </Link>
-        <Link href={`/comparar?symbolA=${asset.symbol}`}>
-          <Button variant="secondary">Comparar con otro activo</Button>
-        </Link>
-        <Link href={`/backtesting?symbol=${asset.symbol}`}>
-          <Button variant="secondary">Probar una estrategia</Button>
-        </Link>
+        <div className="rounded-xl border border-border bg-surface p-5">
+          <p className="text-sm font-medium text-text">
+            Simulaciones, comparaciones y recomendaciones
+          </p>
+          <p className="mt-1 text-xs text-text-muted">
+            Pregúntale al chat de Alfia (Pro) — por ejemplo &ldquo;simula invertir
+            $10,000 en {asset.symbol} a 1 año&rdquo; o &ldquo;debería comprar{" "}
+            {asset.symbol}?&rdquo;.
+          </p>
+          <Link href="/chat" className="mt-3 inline-block">
+            <Button variant="secondary">Ir al chat</Button>
+          </Link>
+        </div>
       </div>
     </div>
   );

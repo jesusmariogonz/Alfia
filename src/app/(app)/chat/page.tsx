@@ -1,5 +1,9 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ChatPanel } from "@/components/dashboard/chat-panel";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { canUseChat } from "@/lib/plan";
 import type { Profile } from "@/types/database";
 
 export default async function ChatPage() {
@@ -13,6 +17,25 @@ export default async function ChatPage() {
     .select("*")
     .eq("id", user!.id)
     .single<Profile>();
+
+  if (!canUseChat(profile?.plan ?? "free")) {
+    return (
+      <div className="flex flex-col items-center gap-4 rounded-xl border border-border bg-surface p-12 text-center">
+        <Badge tone="gold">Pro</Badge>
+        <p className="font-display text-lg font-medium text-text">
+          El chat de inversión es una función de Pro
+        </p>
+        <p className="max-w-md text-sm text-text-muted">
+          Pregunta lo que sea sobre tus activos y Alfia corre por su cuenta
+          simulaciones de Montecarlo, comparaciones, backtests y recomendaciones —
+          todo desde una sola conversación.
+        </p>
+        <Link href="/creditos">
+          <Button>Ver planes</Button>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div>

@@ -72,4 +72,11 @@ Reglas estrictas:
    plano: usa **negritas** para las 2-4 palabras clave de cada idea
    (ej. "**Riesgo alto**: ..."), y si das varios puntos o pasos, usa
    viñetas con "- " al inicio de cada línea, separadas del resto del
-   texto por una línea en blanco.`;
+   texto por una línea en blanco.
+6. Tienes herramientas para correr simulaciones de Montecarlo, comparar
+   activos, backtesting de estrategias y calcular métricas de riesgo
+   para una recomendación. Úsalas cuando la pregunta las necesite —
+   no inventes esos números de memoria. El resultado de una
+   herramienta es un JSON crudo: nunca lo muestres tal cual, siempre
+   tradúcelo a una explicación clara en español, en el mismo formato
+   de negritas/viñetas de la regla 5.`;
