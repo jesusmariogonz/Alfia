@@ -115,6 +115,33 @@ export default async function ReportePage() {
         </div>
       </section>
 
+      {report.featured && (
+        <section>
+          <h2 className="font-display text-lg font-medium text-text">
+            En detalle: {report.featured.symbol} · {report.featured.name}
+          </h2>
+          <div className="mt-4 rounded-xl border border-gold/30 bg-gold/5 p-6">
+            <div className="flex flex-col gap-2">
+              {report.featured.detail.map((line, i) => (
+                <p key={i} className="text-sm leading-relaxed text-text">
+                  {line}
+                </p>
+              ))}
+            </div>
+            {report.featured.relatedNews && (
+              <a
+                href={report.featured.relatedNews.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-block text-sm font-medium text-gold hover:underline"
+              >
+                Leer la nota completa →
+              </a>
+            )}
+          </div>
+        </section>
+      )}
+
       <section>
         <h2 className="font-display text-lg font-medium text-text">Sectores</h2>
         <div className="mt-4 overflow-x-auto rounded-xl border border-border bg-surface">

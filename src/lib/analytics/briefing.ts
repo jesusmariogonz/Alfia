@@ -50,7 +50,7 @@ async function todaysApertura(): Promise<MarketBriefing | null> {
 }
 
 const SYSTEM_PROMPT =
-  "Escribes briefings cortos de mercado para Alfia, una plataforma de análisis financiero. Tono profesional, directo, sin jerga innecesaria, en español neutro. Nunca dices 'compra' o 'vende' — describes lo que pasó y lo que es razonable esperar, dejando claro que es información educativa, no asesoría financiera regulada. Responde ÚNICAMENTE con un objeto JSON válido, sin texto extra: {\"title\": string, \"content\": string[] (3-5 párrafos cortos)}.";
+  "Escribes briefings cortos de mercado para Alfia, una plataforma de análisis financiero. Tono profesional, directo, sin jerga innecesaria, en español neutro. No te quedes en generalidades tipo 'el mercado tuvo movimientos mixtos' — arranca con 1-2 frases de panorama general y luego dedica al menos un párrafo a hacer zoom en el dato o activo más específico y relevante que te demos (números exactos, comparación contra lo normal para ese activo, causa probable si hay una noticia relacionada). Nunca dices 'compra' o 'vende' — describes lo que pasó y lo que es razonable esperar, dejando claro que es información educativa, no asesoría financiera regulada. Responde ÚNICAMENTE con un objeto JSON válido, sin texto extra: {\"title\": string, \"content\": string[] (3-5 párrafos cortos)}.";
 
 async function askClaude(userPrompt: string): Promise<{ title: string; content: string[] } | null> {
   const anthropic = getAnthropicClient();
@@ -79,10 +79,13 @@ export async function generateBriefing(
 ): Promise<{ title: string; content: string[]; refersTo: string | null } | null> {
   const report = await computeDailyReport();
   const reportSummary = report.narrative.join(" ");
+  const featuredText = report.featured
+    ? `Dato específico para hacerle zoom: ${report.featured.detail.join(" ")}`
+    : "";
 
   if (type === "apertura") {
     const result = await askClaude(
-      `Escribe el briefing de apertura de mercado (se publica 20 minutos antes de que abra). Con esto en mente: ${reportSummary}. Sentimiento de mercado: ${report.sentiment?.label ?? "sin datos"}. Sectores líderes/rezagados: ${report.sectors.map((s) => `${s.sector} ${(s.avgDayChangePct * 100).toFixed(1)}%`).join(", ")}. Da: (1) un resumen de cómo cerró la sesión pasada, (2) 2-3 ideas o proyecciones concretas de qué vigilar hoy (sectores, índices, catalizadores), dejando claro que son proyecciones educativas, no garantías.`,
+      `Escribe el briefing de apertura de mercado (se publica 20 minutos antes de que abra). Con esto en mente: ${reportSummary}. Sentimiento de mercado: ${report.sentiment?.label ?? "sin datos"}. Sectores líderes/rezagados: ${report.sectors.map((s) => `${s.sector} ${(s.avgDayChangePct * 100).toFixed(1)}%`).join(", ")}. ${featuredText} Da: (1) un resumen breve de cómo cerró la sesión pasada, (2) zoom detallado en el dato específico de arriba y por qué importa para hoy, (3) 2-3 ideas o proyecciones concretas de qué vigilar hoy (sectores, índices, catalizadores), dejando claro que son proyecciones educativas, no garantías.`,
     );
     return result ? { ...result, refersTo: null } : null;
   }
@@ -105,7 +108,7 @@ export async function generateBriefing(
   const apertura = await todaysApertura();
   const aperturaText = apertura ? apertura.content.join(" ") : "No se generó briefing de apertura hoy.";
   const result = await askClaude(
-    `Escribe el briefing de cierre de mercado (se publica 20 minutos antes de que cierre). Esto fue lo que proyectamos en la apertura de hoy: "${aperturaText}". Esto es lo que realmente pasó: ${reportSummary}. Sectores: ${report.sectors.map((s) => `${s.sector} ${(s.avgDayChangePct * 100).toFixed(1)}%`).join(", ")}. Compara explícitamente lo proyectado contra lo que ocurrió (qué se cumplió, qué no) y cierra con qué vigilar para la próxima sesión.`,
+    `Escribe el briefing de cierre de mercado (se publica 20 minutos antes de que cierre). Esto fue lo que proyectamos en la apertura de hoy: "${aperturaText}". Esto es lo que realmente pasó: ${reportSummary}. Sectores: ${report.sectors.map((s) => `${s.sector} ${(s.avgDayChangePct * 100).toFixed(1)}%`).join(", ")}. ${featuredText} Compara explícitamente lo proyectado contra lo que ocurrió (qué se cumplió, qué no), haz zoom en el dato específico de arriba, y cierra con qué vigilar para la próxima sesión.`,
   );
   return result ? { ...result, refersTo: apertura?.id ?? null } : null;
 }

@@ -72,6 +72,22 @@ export default async function DashboardPage() {
               <li key={i}>· {line}</li>
             ))}
           </ul>
+
+          {report.featured && (
+            <div className="mt-4 rounded-lg border border-border bg-surface-2 p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-gold">
+                En detalle: {report.featured.symbol}
+              </p>
+              <div className="mt-2 flex flex-col gap-1.5">
+                {report.featured.detail.map((line, i) => (
+                  <p key={i} className="text-sm leading-relaxed text-text">
+                    {line}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+
           <Link
             href="/reporte"
             className="mt-4 inline-block text-sm font-medium text-green-bright hover:underline"

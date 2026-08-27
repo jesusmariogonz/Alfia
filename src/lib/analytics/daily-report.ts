@@ -1,5 +1,9 @@
 import { getCloses, UNIVERSE, type Candle } from "@/lib/market-data";
 import { computeMarketSentiment, type MarketSentiment } from "./sentiment";
+import { computeRiskMetrics } from "./metrics";
+import { computeAlfiaScore, scoreLabel } from "./score";
+import { createAdminClient } from "@/lib/supabase/admin";
+import type { NewsItem } from "@/types/database";
 
 const INDEX_SYMBOLS = ["SPY", "QQQ"];
 const BOND_SYMBOL = "TLT";
@@ -30,6 +34,18 @@ export type SectorSnapshot = {
   assetCount: number;
 };
 
+export type FeaturedStory = {
+  symbol: string;
+  name: string;
+  dayChangePct: number;
+  typicalDailyMovePct: number;
+  movesVsTypical: number; // ej. 3.2x su movimiento diario típico
+  alfiaScore: number;
+  scoreLabel: string;
+  relatedNews: { title: string; url: string; source: string } | null;
+  detail: string[];
+};
+
 export type DailyReport = {
   generatedAt: string;
   sentiment: MarketSentiment | null;
@@ -42,7 +58,68 @@ export type DailyReport = {
   bondChangePct: number | null;
   breadthPct: number;
   narrative: string[];
+  featured: FeaturedStory | null;
 };
+
+async function findRelatedNews(
+  asset: (typeof UNIVERSE)[number],
+): Promise<{ title: string; url: string; source: string } | null> {
+  const admin = createAdminClient();
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { data } = await admin
+    .from("news_items")
+    .select("*")
+    .gte("published_at", since)
+    .or(`title.ilike.%${asset.symbol}%,title.ilike.%${asset.name.split(" ")[0]}%`)
+    .order("published_at", { ascending: false })
+    .limit(1)
+    .returns<NewsItem[]>();
+
+  const match = data?.[0];
+  return match ? { title: match.title, url: match.url, source: match.source } : null;
+}
+
+async function buildFeaturedStory(
+  withReturns: { asset: (typeof UNIVERSE)[number]; closes: Candle[]; dayChangePct: number }[],
+): Promise<FeaturedStory | null> {
+  if (withReturns.length === 0) return null;
+
+  const featured = [...withReturns].sort(
+    (a, b) => Math.abs(b.dayChangePct) - Math.abs(a.dayChangePct),
+  )[0];
+
+  const metrics = computeRiskMetrics(featured.closes);
+  const typicalDailyMovePct = metrics.annualizedVolatility / Math.sqrt(252);
+  const movesVsTypical = typicalDailyMovePct > 0 ? Math.abs(featured.dayChangePct) / typicalDailyMovePct : 1;
+  const score = computeAlfiaScore(metrics);
+  const relatedNews = await findRelatedNews(featured.asset);
+
+  const direction = featured.dayChangePct >= 0 ? "subió" : "cayó";
+  const magnitude =
+    movesVsTypical >= 2
+      ? `un movimiento inusual — cerca de ${movesVsTypical.toFixed(1)}x su variación diaria típica (~${(typicalDailyMovePct * 100).toFixed(1)}%)`
+      : `dentro de su rango de variación diaria habitual (~${(typicalDailyMovePct * 100).toFixed(1)}%)`;
+
+  const detail: string[] = [
+    `${featured.asset.symbol} (${featured.asset.name}) fue el movimiento más marcado del universo hoy: ${direction} ${(Math.abs(featured.dayChangePct) * 100).toFixed(2)}%, ${magnitude}.`,
+    `Su Alfia Score es ${score} (${scoreLabel(score)}), con una volatilidad anualizada de ${(metrics.annualizedVolatility * 100).toFixed(0)}% y un Sharpe de ${metrics.sharpeRatio.toFixed(2)} en los últimos 2 años — contexto útil para juzgar si este movimiento es ruido normal o una señal a vigilar.`,
+  ];
+  if (relatedNews) {
+    detail.push(`Podría estar relacionado con esta nota reciente: "${relatedNews.title}" (${relatedNews.source}).`);
+  }
+
+  return {
+    symbol: featured.asset.symbol,
+    name: featured.asset.name,
+    dayChangePct: featured.dayChangePct,
+    typicalDailyMovePct,
+    movesVsTypical,
+    alfiaScore: score,
+    scoreLabel: scoreLabel(score),
+    relatedNews,
+    detail,
+  };
+}
 
 export async function computeDailyReport(): Promise<DailyReport> {
   const [sentiment, indexCloses, goldCloses, oilCloses, bondCloses, allCloses] = await Promise.all([
@@ -133,6 +210,8 @@ export async function computeDailyReport(): Promise<DailyReport> {
     }
   }
 
+  const featured = await buildFeaturedStory(withReturns);
+
   return {
     generatedAt: new Date().toISOString(),
     sentiment,
@@ -145,5 +224,6 @@ export async function computeDailyReport(): Promise<DailyReport> {
     bondChangePct: bondCloses ? dayReturn(bondCloses) : null,
     breadthPct,
     narrative,
+    featured,
   };
 }
