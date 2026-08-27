@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
+import { NewsListPaginated } from "@/components/dashboard/news-list-paginated";
 import type { NewsItem } from "@/types/database";
 
 const SENTIMENT_TONE: Record<NewsItem["sentiment"], "green" | "neutral"> = {
@@ -29,7 +30,7 @@ export async function NewsFeed({ limit, hero = false }: { limit?: number; hero?:
     .from("news_items")
     .select("*")
     .order("published_at", { ascending: false })
-    .limit(limit ?? 20)
+    .limit(limit ?? 30)
     .returns<NewsItem[]>();
 
   if (!news || news.length === 0) {
@@ -79,42 +80,7 @@ export async function NewsFeed({ limit, hero = false }: { limit?: number; hero?:
         </a>
       )}
 
-      <div className="divide-y divide-border">
-        {rest.map((item) => (
-          <a
-            key={item!.id}
-            href={item!.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-start gap-4 py-4 transition-colors hover:bg-surface-2"
-          >
-            {item!.image_url && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={item!.image_url}
-                alt=""
-                className="h-16 w-16 shrink-0 rounded-lg object-cover"
-              />
-            )}
-            <div className="min-w-0 flex-1">
-              <div className="flex items-start justify-between gap-4">
-                <p className="text-sm font-medium text-text">{item!.title}</p>
-                <Badge tone={SENTIMENT_TONE[item!.sentiment]}>
-                  <span className={SENTIMENT_TEXT_COLOR[item!.sentiment]}>{item!.sentiment}</span>
-                </Badge>
-              </div>
-              {item!.summary && (
-                <p className="mt-1 text-xs leading-relaxed text-text-muted line-clamp-2">
-                  {item!.summary}
-                </p>
-              )}
-              <p className="mt-1 text-xs text-text-muted">
-                {item!.source} · {relativeTime(item!.published_at)}
-              </p>
-            </div>
-          </a>
-        ))}
-      </div>
+      <NewsListPaginated items={rest as NewsItem[]} />
     </div>
   );
 }

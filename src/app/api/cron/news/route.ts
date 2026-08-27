@@ -49,5 +49,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  // Conserva solo las últimas 30 noticias en total.
+  const { data: keep } = await admin
+    .from("news_items")
+    .select("id")
+    .order("published_at", { ascending: false })
+    .limit(30);
+  const keepIds = (keep ?? []).map((r) => r.id);
+  if (keepIds.length > 0) {
+    await admin.from("news_items").delete().not("id", "in", `(${keepIds.join(",")})`);
+  }
+
   return NextResponse.json({ inserted: count ?? 0, fetched: rows.length });
 }
