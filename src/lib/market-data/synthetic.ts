@@ -34,6 +34,9 @@ function randNormal(rand: () => number): number {
 export type Candle = {
   date: string;
   close: number;
+  open: number;
+  high: number;
+  low: number;
 };
 
 /**
@@ -64,9 +67,21 @@ export function getHistoricalCloses(
   const adjusted = closes.map((c) => c * scale);
 
   const today = new Date();
+  const intradayScale = annualVolatility * 0.15; // rango intradía plausible para open/high/low
   return adjusted.map((close, i) => {
     const date = new Date(today);
     date.setDate(date.getDate() - (days - i));
-    return { date: date.toISOString().slice(0, 10), close: Number(close.toFixed(2)) };
+    const prevClose = i === 0 ? close : adjusted[i - 1];
+    const open = prevClose * (1 + (rand() - 0.5) * intradayScale * 0.4);
+    const swing = close * intradayScale * rand();
+    const high = Math.max(open, close) + swing * rand();
+    const low = Math.min(open, close) - swing * rand();
+    return {
+      date: date.toISOString().slice(0, 10),
+      close: Number(close.toFixed(2)),
+      open: Number(open.toFixed(2)),
+      high: Number(high.toFixed(2)),
+      low: Number(low.toFixed(2)),
+    };
   });
 }

@@ -91,6 +91,9 @@ export function runBacktest(closes: Candle[], strategy: StrategyConfig): Backtes
   const syntheticCloses: Candle[] = strategyValues.map((v, i) => ({
     date: closes[i].date,
     close: v,
+    open: v,
+    high: v,
+    low: v,
   }));
 
   return {

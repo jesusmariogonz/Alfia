@@ -4,7 +4,8 @@ import { UNIVERSE, getCloses } from "@/lib/market-data";
 import { computeRiskMetrics } from "@/lib/analytics/metrics";
 import { computeAlfiaScore } from "@/lib/analytics/score";
 import { isFreePlan, FREE_SCREENER_LIMIT } from "@/lib/plan";
-import { ScreenerTable, type ScreenerRow } from "@/components/analytics/screener-table";
+import { ScreenerClient } from "@/components/analytics/screener-client";
+import type { ScreenerRow } from "@/components/analytics/screener-table";
 import { Badge } from "@/components/ui/badge";
 import type { Profile } from "@/types/database";
 
@@ -40,6 +41,7 @@ export default async function ScreenerPage() {
         sharpeRatio: metrics.sharpeRatio,
         alfiaScore: computeAlfiaScore(metrics),
         sparkline: closes.slice(-60).map((c) => c.close),
+        history: closes,
       };
     }),
   );
@@ -57,8 +59,8 @@ export default async function ScreenerPage() {
           <p className="text-sm text-text">
             <Badge tone="gold">{user ? "Free" : "Sin cuenta"}</Badge>{" "}
             <span className="ml-2">
-              Ves {universe.length} de {UNIVERSE.length} activos, sin indicadores
-              avanzados (medias móviles, velas).
+              Ves {universe.length} de {UNIVERSE.length} activos, puedes comparar
+              hasta 3 a la vez, sin velas ni exportar a CSV.
             </span>
           </p>
           <Link
@@ -71,7 +73,7 @@ export default async function ScreenerPage() {
       )}
 
       <div className="mt-6">
-        <ScreenerTable rows={rows} />
+        <ScreenerClient rows={rows} plan={plan} />
       </div>
     </div>
   );

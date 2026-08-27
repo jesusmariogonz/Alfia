@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Sparkline } from "@/components/analytics/sparkline";
 import { InfoModal } from "@/components/ui/info-modal";
-import type { AssetClass } from "@/lib/market-data";
+import type { AssetClass, Candle } from "@/lib/market-data";
 
 export type ScreenerRow = {
   symbol: string;
@@ -18,6 +18,7 @@ export type ScreenerRow = {
   sharpeRatio: number;
   alfiaScore: number;
   sparkline: number[];
+  history: Candle[];
 };
 
 function scoreTone(score: number): string {
@@ -52,7 +53,17 @@ const ASSET_CLASS_LABEL: Record<AssetClass, string> = {
   cripto: "Cripto",
 };
 
-export function ScreenerTable({ rows }: { rows: ScreenerRow[] }) {
+export function ScreenerTable({
+  rows,
+  selected,
+  onToggle,
+  maxSelectable,
+}: {
+  rows: ScreenerRow[];
+  selected: Set<string>;
+  onToggle: (symbol: string) => void;
+  maxSelectable: number | null;
+}) {
   const [query, setQuery] = useState("");
   const [assetClass, setAssetClass] = useState<AssetClass | "todas">("todas");
   const [minReturn, setMinReturn] = useState<number>(-100);
@@ -134,6 +145,12 @@ export function ScreenerTable({ rows }: { rows: ScreenerRow[] }) {
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead>
             <tr className="border-b border-border text-text-muted">
+              <th className="px-5 py-3 font-medium">
+                Comparar
+                {maxSelectable !== null && (
+                  <span className="ml-1 font-normal text-text-muted/70">(máx. {maxSelectable})</span>
+                )}
+              </th>
               <th className="px-5 py-3 font-medium">Activo</th>
               <th className="px-5 py-3 font-medium">Precio</th>
               <th className="px-5 py-3 font-medium">Tendencia</th>
@@ -169,6 +186,19 @@ export function ScreenerTable({ rows }: { rows: ScreenerRow[] }) {
           <tbody className="divide-y divide-border">
             {filtered.map((row) => (
               <tr key={row.symbol} className="hover:bg-surface-2">
+                <td className="px-5 py-3">
+                  <input
+                    type="checkbox"
+                    checked={selected.has(row.symbol)}
+                    onChange={() => onToggle(row.symbol)}
+                    disabled={
+                      !selected.has(row.symbol) &&
+                      maxSelectable !== null &&
+                      selected.size >= maxSelectable
+                    }
+                    className="h-4 w-4 accent-green-bright"
+                  />
+                </td>
                 <td className="px-5 py-3">
                   <Link href={`/activos/${row.symbol}`} className="block">
                     <p className="font-data font-medium text-text">{row.symbol}</p>
@@ -210,7 +240,7 @@ export function ScreenerTable({ rows }: { rows: ScreenerRow[] }) {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-5 py-8 text-center text-text-muted">
+                <td colSpan={9} className="px-5 py-8 text-center text-text-muted">
                   Ningún activo cumple estos filtros. Prueba ampliarlos.
                 </td>
               </tr>

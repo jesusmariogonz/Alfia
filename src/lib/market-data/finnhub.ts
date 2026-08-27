@@ -7,6 +7,9 @@ export type FinnhubQuote = {
 
 type FinnhubCandleResponse = {
   c: number[]; // cierres
+  o: number[]; // apertura
+  h: number[]; // máximo
+  l: number[]; // mínimo
   t: number[]; // timestamps (unix, segundos)
   s: "ok" | "no_data";
 };
@@ -52,7 +55,7 @@ export async function fetchQuote(symbol: string): Promise<FinnhubQuote | null> {
 export async function fetchDailyCandles(
   symbol: string,
   days: number,
-): Promise<{ date: string; close: number }[] | null> {
+): Promise<{ date: string; close: number; open: number; high: number; low: number }[] | null> {
   const to = Math.floor(Date.now() / 1000);
   const from = to - days * 24 * 60 * 60;
 
@@ -68,5 +71,8 @@ export async function fetchDailyCandles(
   return data.t.map((timestamp, i) => ({
     date: new Date(timestamp * 1000).toISOString().slice(0, 10),
     close: data.c[i],
+    open: data.o[i],
+    high: data.h[i],
+    low: data.l[i],
   }));
 }

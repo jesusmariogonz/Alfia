@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { findAsset, getCloses } from "@/lib/market-data";
 import { computeRiskMetrics } from "@/lib/analytics/metrics";
 import { computeAlfiaScore, scoreLabel } from "@/lib/analytics/score";
-import { Sparkline } from "@/components/analytics/sparkline";
+import { AssetChartPanel } from "@/components/analytics/asset-chart-panel";
 import { RiskMetricsGrid } from "@/components/analytics/risk-metrics-grid";
 import { WatchlistToggleButton } from "@/components/analytics/watchlist-toggle-button";
 import { PositionForm } from "@/components/portfolio/position-form";
@@ -91,9 +91,7 @@ export default async function ActivoPage({
         )}
       </div>
 
-      <div className="rounded-xl border border-border bg-surface p-6">
-        <Sparkline values={closes.map((c) => c.close)} up={changePct >= 0} width={600} height={140} />
-      </div>
+      <AssetChartPanel symbol={asset.symbol} candles={closes} plan={profile?.plan ?? "free"} />
 
       <div>
         <h2 className="font-display text-lg font-medium text-text">
