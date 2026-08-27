@@ -13,7 +13,8 @@ export type QueryType =
   | "montecarlo"
   | "comparador"
   | "screener"
-  | "backtest";
+  | "backtest"
+  | "recomendacion";
 
 export type Profile = {
   id: string;
@@ -30,6 +31,7 @@ export type WatchlistItem = {
   id: string;
   user_id: string;
   symbol: string;
+  invested_usd: number | null;
   created_at: string;
 };
 

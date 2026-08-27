@@ -3,6 +3,7 @@ import { NewsFeed } from "@/components/dashboard/news-feed";
 import { Disclaimer } from "@/components/ui/disclaimer";
 
 const quickLinks = [
+  { href: "/portafolio", label: "Mi Portafolio", description: "Tus posiciones, riesgo y correlación reunidos" },
   { href: "/screener", label: "Screener", description: "Filtra activos por retorno y riesgo" },
   { href: "/comparar", label: "Comparador", description: "Compara dos activos lado a lado" },
   { href: "/simulador", label: "Simulador Montecarlo", description: "Proyecta escenarios de inversión" },

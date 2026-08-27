@@ -32,6 +32,48 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ ok: true });
 }
 
+export async function PATCH(request: NextRequest) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "No autenticado." }, { status: 401 });
+  }
+
+  const body = await request.json().catch(() => null);
+  const symbol: string | undefined = body?.symbol;
+  const investedUsd = body?.investedUsd;
+  const asset = symbol ? findAsset(symbol) : undefined;
+
+  if (!asset) {
+    return NextResponse.json({ error: "Activo no encontrado." }, { status: 404 });
+  }
+  if (investedUsd !== null && (typeof investedUsd !== "number" || investedUsd < 0)) {
+    return NextResponse.json(
+      { error: "El monto invertido debe ser un número positivo." },
+      { status: 400 },
+    );
+  }
+
+  // Upsert: si el activo no estaba en la watchlist, esto también lo agrega
+  // — así "agregar una posición" funciona aunque el usuario no lo haya
+  // seguido antes.
+  const { error } = await supabase
+    .from("watchlist_items")
+    .upsert(
+      { user_id: user.id, symbol: asset.symbol, invested_usd: investedUsd },
+      { onConflict: "user_id,symbol" },
+    );
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true });
+}
+
 export async function DELETE(request: NextRequest) {
   const supabase = await createClient();
   const {

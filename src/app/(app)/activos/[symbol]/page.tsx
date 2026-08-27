@@ -7,6 +7,8 @@ import { computeAlfiaScore, scoreLabel } from "@/lib/analytics/score";
 import { Sparkline } from "@/components/analytics/sparkline";
 import { RiskMetricsGrid } from "@/components/analytics/risk-metrics-grid";
 import { WatchlistToggleButton } from "@/components/analytics/watchlist-toggle-button";
+import { RecommendationPanel } from "@/components/analytics/recommendation-panel";
+import { PositionForm } from "@/components/portfolio/position-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Disclaimer } from "@/components/ui/disclaimer";
@@ -33,7 +35,7 @@ export default async function ActivoPage({
   } = await supabase.auth.getUser();
   const { data: watchlistItem } = await supabase
     .from("watchlist_items")
-    .select("id")
+    .select("id, invested_usd")
     .eq("user_id", user!.id)
     .eq("symbol", asset.symbol)
     .maybeSingle();
@@ -77,6 +79,14 @@ export default async function ActivoPage({
           <RiskMetricsGrid metrics={metrics} />
         </div>
         <Disclaimer className="mt-3" />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <PositionForm
+          symbol={asset.symbol}
+          initialInvestedUsd={watchlistItem?.invested_usd ?? null}
+        />
+        <RecommendationPanel symbol={asset.symbol} />
       </div>
 
       <div className="flex flex-wrap gap-3">
