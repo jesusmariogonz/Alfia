@@ -12,9 +12,11 @@ export type UniverseAsset = {
 };
 
 /**
- * Universo de activos de ejemplo. Cuando se integre un proveedor real
- * (Polygon/Finnhub), este archivo se reemplaza por una llamada a su API de
- * referencia de tickers — el resto del código solo depende de `UniverseAsset`.
+ * Universo de activos soportados. Las acciones y ETFs traen precio/histórico
+ * reales vía Finnhub (`FINNHUB_API_KEY`); cripto sigue en el generador
+ * sintético (ver `index.ts`). Ampliar la cobertura más allá de esta lista
+ * fija implicaría reemplazar esto por una llamada al endpoint de referencia
+ * de tickers de Finnhub — el resto del código solo depende de `UniverseAsset`.
  */
 export const UNIVERSE: UniverseAsset[] = [
   { symbol: "AAPL", name: "Apple Inc.", sector: "Tecnología", assetClass: "accion", basePrice: 227.14, annualDrift: 0.14, annualVolatility: 0.28 },

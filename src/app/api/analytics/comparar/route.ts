@@ -59,8 +59,12 @@ export async function POST(request: NextRequest) {
     throw err;
   }
 
-  const metricsA = computeRiskMetrics(getCloses(assetA.symbol)!);
-  const metricsB = computeRiskMetrics(getCloses(assetB.symbol)!);
+  const [closesA, closesB] = await Promise.all([
+    getCloses(assetA.symbol),
+    getCloses(assetB.symbol),
+  ]);
+  const metricsA = computeRiskMetrics(closesA!);
+  const metricsB = computeRiskMetrics(closesB!);
 
   const anthropic = getAnthropicClient();
   let interpretation =

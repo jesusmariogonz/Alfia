@@ -7,18 +7,23 @@ const FALLBACK_RECAP =
   "El motor de IA todavía no está configurado en este entorno (falta ANTHROPIC_API_KEY), así que este resumen semanal es un marcador de posición. Configura la clave para que Alfia genere el resumen real cada semana.";
 
 /**
- * Genera el contenido del newsletter semanal. Hoy resume el movimiento de
- * precios sintéticos del universo de ejemplo — cuando se conecte un
- * proveedor de datos y noticias reales (ver `lib/market-data`), este es el
- * único lugar que necesita cambiar para reflejarlos.
+ * Genera el contenido del newsletter semanal a partir del movimiento de
+ * precios de `lib/market-data` (real para acciones/ETFs vía Finnhub si
+ * `FINNHUB_API_KEY` está configurada, sintético si no). Cuando se conecte
+ * una fuente de noticias real, este es el único lugar que necesita cambiar
+ * para reflejarlas.
  */
 export async function buildWeeklyNewsletter(): Promise<{ subject: string; html: string }> {
-  const movers = UNIVERSE.map((asset) => {
-    const closes = getCloses(asset.symbol)!;
-    const last = closes[closes.length - 1].close;
-    const weekAgo = closes[Math.max(0, closes.length - 6)].close;
-    return { symbol: asset.symbol, name: asset.name, weekChangePct: last / weekAgo - 1 };
-  }).sort((a, b) => b.weekChangePct - a.weekChangePct);
+  const movers = (
+    await Promise.all(
+      UNIVERSE.map(async (asset) => {
+        const closes = (await getCloses(asset.symbol))!;
+        const last = closes[closes.length - 1].close;
+        const weekAgo = closes[Math.max(0, closes.length - 6)].close;
+        return { symbol: asset.symbol, name: asset.name, weekChangePct: last / weekAgo - 1 };
+      }),
+    )
+  ).sort((a, b) => b.weekChangePct - a.weekChangePct);
 
   const topGainers = movers.slice(0, 3);
   const topLosers = movers.slice(-3).reverse();

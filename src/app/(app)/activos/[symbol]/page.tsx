@@ -20,7 +20,7 @@ export default async function ActivoPage({
   const asset = findAsset(symbol);
   if (!asset) notFound();
 
-  const closes = getCloses(asset.symbol)!;
+  const closes = (await getCloses(asset.symbol))!;
   const metrics = computeRiskMetrics(closes);
   const score = computeAlfiaScore(metrics);
   const last = closes[closes.length - 1].close;

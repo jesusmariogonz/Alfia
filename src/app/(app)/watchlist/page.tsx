@@ -19,16 +19,18 @@ export default async function WatchlistPage() {
     .order("created_at", { ascending: false })
     .returns<WatchlistItem[]>();
 
-  const rows = (items ?? [])
-    .map((item) => {
-      const asset = findAsset(item.symbol);
-      if (!asset) return null;
-      const closes = getCloses(asset.symbol)!;
-      const last = closes[closes.length - 1].close;
-      const prev = closes[closes.length - 2].close;
-      return { asset, price: last, changePct: last / prev - 1, closes };
-    })
-    .filter((r): r is NonNullable<typeof r> => r !== null);
+  const rows = (
+    await Promise.all(
+      (items ?? []).map(async (item) => {
+        const asset = findAsset(item.symbol);
+        if (!asset) return null;
+        const closes = (await getCloses(asset.symbol))!;
+        const last = closes[closes.length - 1].close;
+        const prev = closes[closes.length - 2].close;
+        return { asset, price: last, changePct: last / prev - 1, closes };
+      }),
+    )
+  ).filter((r): r is NonNullable<typeof r> => r !== null);
 
   return (
     <div>

@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
     strategy = parseStrategy(extractionText);
   }
 
-  const closes = getCloses(asset.symbol)!;
+  const closes = (await getCloses(asset.symbol))!;
   const result = runBacktest(closes, strategy);
 
   if (anthropic) {

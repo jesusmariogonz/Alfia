@@ -126,15 +126,32 @@ actualiza `profiles.plan`. Las renovaciones mensuales de suscripción se
 recargan vía `invoice.payment_succeeded`; al cancelar, `customer.subscription.deleted`
 regresa el plan a `free`.
 
-### Datos de mercado (Fase 2)
+### Datos de mercado
 
 `src/lib/market-data` es el único punto de acceso a precios/series
-históricas. Hoy está respaldado por un generador sintético determinista
-(`synthetic.ts`, seed por símbolo — el mismo activo siempre da la misma
-serie) sobre un universo de ~15 tickers de ejemplo (`universe.ts`). Cuando se
-conecte Polygon.io o Finnhub, solo `getCloses`/`getQuote` en
-`market-data/index.ts` cambian de implementación — el resto del código
-(analíticas, screener, comparador, Montecarlo, watchlist) no se toca.
+históricas — el resto del código (analíticas, screener, comparador,
+Montecarlo, watchlist, newsletter) solo depende de `getCloses`/`getQuote`,
+nunca del proveedor detrás.
+
+1. Crea una cuenta gratis en [finnhub.io/register](https://finnhub.io/register)
+   (no pide tarjeta) y copia la API key de tu dashboard a `FINNHUB_API_KEY`.
+2. Con esa clave, **acciones y ETFs** traen precio y series históricas reales
+   (`finnhub.ts`, cacheado en memoria: 1 min para cotizaciones, 6h para
+   velas diarias — evita quemar el límite de 60 req/min del plan gratis
+   cuando varios usuarios ven el mismo activo).
+3. **Cripto (BTC/ETH) sigue en el generador sintético** — Finnhub usa un
+   formato de símbolo y endpoints distintos para cripto (sin un "precio
+   actual" simple), así que no se integró todavía; es un cambio aislado a
+   `index.ts` el día que se justifique.
+4. Sin `FINNHUB_API_KEY`, todo el universo (`universe.ts`, ~15 tickers de
+   ejemplo) cae al generador sintético determinista (`synthetic.ts`) — la
+   app funciona igual, solo que los números son de ejemplo.
+
+⚠️ **Nota legal**: el plan gratis de Finnhub está pensado para uso
+personal/no comercial en sus términos de servicio. Alfia cobra a usuarios,
+así que esto es aceptable para validar el producto a bajo volumen, pero
+conviene migrar a un plan pagado (de Finnhub o de Polygon.io, que si
+permite uso comercial desde su tier pagado) antes de escalar en serio.
 
 Corre la migración `supabase/migrations/0002_watchlist.sql` además de la
 0001 para habilitar la watchlist.
@@ -206,11 +223,10 @@ para que cada pieza funcione en un entorno real:
    el simulador de Montecarlo, el comparador y el backtesting funcionan pero
    devuelven un aviso de "IA no configurada" en vez de la interpretación en
    lenguaje natural.
-4. **Datos de mercado reales**: hoy todo corre sobre datos sintéticos
-   (`lib/market-data`). Cuando quieras precios reales, contratar Polygon.io o
-   Finnhub, completar `POLYGON_API_KEY`, y reemplazar la implementación de
-   `getCloses`/`getQuote` en `lib/market-data/index.ts` — es un cambio
-   aislado a ese archivo.
+4. **Datos de mercado**: ✅ integrado — completar `FINNHUB_API_KEY` (cuenta
+   gratis en finnhub.io) activa precios/históricos reales para acciones y
+   ETFs. Cripto sigue sintético (ver sección de arriba). Ojo con la nota
+   legal sobre uso comercial del plan gratis de Finnhub, también arriba.
 5. **Newsletter**: cuenta y dominio verificado en Resend
    (`RESEND_API_KEY`, `NEWSLETTER_FROM_EMAIL`), generar `CRON_SECRET`, y
    asegurarse de que algo dispare `/api/cron/newsletter` semanalmente (Vercel
