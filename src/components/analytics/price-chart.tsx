@@ -47,12 +47,21 @@ function useHoverIndex(width: number, padding: number, count: number) {
     setIndex(Math.max(0, Math.min(count - 1, i)));
   }
 
+  // % horizontal (0-100, acotado para que el tooltip flotante no se salga del borde)
+  const leftPct = index !== null && count > 1 ? Math.min(88, Math.max(12, (index / (count - 1)) * 100)) : null;
+
   return {
     svgRef,
     index,
+    leftPct,
     onMouseMove: (e: React.MouseEvent) => updateFromClientX(e.clientX),
     onMouseLeave: () => setIndex(null),
+    onTouchStart: (e: React.TouchEvent) => {
+      const touch = e.touches[0];
+      if (touch) updateFromClientX(touch.clientX);
+    },
     onTouchMove: (e: React.TouchEvent) => {
+      e.preventDefault();
       const touch = e.touches[0];
       if (touch) updateFromClientX(touch.clientX);
     },
@@ -80,7 +89,7 @@ export function NormalizedLineChart({
   const gradientId = useId();
   const usable = series.filter((s) => s.candles.length > 1);
   const pointCount = usable[0]?.candles.length ?? 0;
-  const { svgRef, index: hoverIndex, ...hoverHandlers } = useHoverIndex(width, padding, pointCount);
+  const { svgRef, index: hoverIndex, leftPct, ...hoverHandlers } = useHoverIndex(width, padding, pointCount);
 
   if (usable.length === 0) {
     return <p className="text-sm text-text-muted">No hay suficientes datos para graficar.</p>;
@@ -113,6 +122,7 @@ export function NormalizedLineChart({
 
   return (
     <div>
+      <div className="relative">
       <svg
         ref={svgRef}
         width="100%"
@@ -122,6 +132,7 @@ export function NormalizedLineChart({
         className="block cursor-crosshair touch-none"
         onMouseMove={hoverHandlers.onMouseMove}
         onMouseLeave={hoverHandlers.onMouseLeave}
+        onTouchStart={hoverHandlers.onTouchStart}
         onTouchMove={hoverHandlers.onTouchMove}
         onTouchEnd={hoverHandlers.onTouchEnd}
       >
@@ -189,10 +200,13 @@ export function NormalizedLineChart({
         )}
       </svg>
 
-      {hoverIndex !== null && usable[0]?.candles[hoverIndex] && (
-        <div className="mt-2 rounded-lg border border-border bg-surface-2 px-3 py-2 text-xs">
+      {hoverIndex !== null && leftPct !== null && usable[0]?.candles[hoverIndex] && (
+        <div
+          className="pointer-events-none absolute top-2 z-10 w-max max-w-[min(88vw,320px)] -translate-x-1/2 rounded-lg border border-border bg-surface px-3 py-2 text-xs shadow-lg"
+          style={{ left: `${leftPct}%` }}
+        >
           <p className="font-data text-text-muted">{formatDate(usable[0].candles[hoverIndex].date)}</p>
-          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+          <div className="mt-1 flex flex-col gap-1">
             {usable.map((s, i) => (
               <span key={s.symbol} className="flex items-center gap-1.5 font-data">
                 <span className="h-2 w-2 rounded-full" style={{ backgroundColor: SERIES_COLORS[i % SERIES_COLORS.length] }} />
@@ -208,6 +222,7 @@ export function NormalizedLineChart({
           </div>
         </div>
       )}
+      </div>
 
       <div className="mt-3 flex flex-wrap gap-4">
         {usable.map((s, i) => (
@@ -236,7 +251,7 @@ export function CandlestickChart({
 }) {
   const width = 800;
   const padding = 8;
-  const { svgRef, index: hoverIndex, ...hoverHandlers } = useHoverIndex(width, padding, candles.length);
+  const { svgRef, index: hoverIndex, leftPct, ...hoverHandlers } = useHoverIndex(width, padding, candles.length);
 
   if (candles.length < 2) {
     return <p className="text-sm text-text-muted">No hay suficientes datos para graficar.</p>;
@@ -266,6 +281,7 @@ export function CandlestickChart({
 
   return (
     <div>
+      <div className="relative">
       <svg
         ref={svgRef}
         width="100%"
@@ -275,6 +291,7 @@ export function CandlestickChart({
         className="block cursor-crosshair touch-none"
         onMouseMove={hoverHandlers.onMouseMove}
         onMouseLeave={hoverHandlers.onMouseLeave}
+        onTouchStart={hoverHandlers.onTouchStart}
         onTouchMove={hoverHandlers.onTouchMove}
         onTouchEnd={hoverHandlers.onTouchEnd}
       >
@@ -314,10 +331,13 @@ export function CandlestickChart({
         )}
       </svg>
 
-      {hovered && (
-        <div className="mt-2 rounded-lg border border-border bg-surface-2 px-3 py-2 text-xs">
+      {hovered && leftPct !== null && (
+        <div
+          className="pointer-events-none absolute top-2 z-10 w-max max-w-[min(88vw,320px)] -translate-x-1/2 rounded-lg border border-border bg-surface px-3 py-2 text-xs shadow-lg"
+          style={{ left: `${leftPct}%` }}
+        >
           <p className="font-data text-text-muted">{formatDate(hovered.date)}</p>
-          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 font-data">
+          <div className="mt-1 flex flex-col gap-1 font-data">
             <span>Apertura: ${hovered.open.toLocaleString("es")}</span>
             <span>Cierre: ${hovered.close.toLocaleString("es")}</span>
             <span>Máximo: ${hovered.high.toLocaleString("es")}</span>
@@ -325,6 +345,7 @@ export function CandlestickChart({
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

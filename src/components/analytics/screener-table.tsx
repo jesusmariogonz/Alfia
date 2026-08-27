@@ -142,22 +142,22 @@ export function ScreenerTable({
       </div>
 
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[720px] text-left text-sm">
+        <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-border text-text-muted">
-              <th className="px-5 py-3 font-medium">
-                Comparar
+              <th className="px-3 py-3 font-medium sm:px-5">
+                <span className="hidden sm:inline">Comparar</span>
                 {maxSelectable !== null && (
                   <span className="ml-1 font-normal text-text-muted/70">(máx. {maxSelectable})</span>
                 )}
               </th>
-              <th className="px-5 py-3 font-medium">Activo</th>
-              <th className="px-5 py-3 font-medium">Precio</th>
-              <th className="px-5 py-3 font-medium">Tendencia</th>
-              <th className="px-5 py-3 font-medium text-right">Retorno anual.</th>
-              <th className="px-5 py-3 font-medium text-right">Volatilidad</th>
-              <th className="px-5 py-3 font-medium text-right">Sharpe</th>
-              <th className="px-5 py-3 font-medium text-right">
+              <th className="px-3 py-3 font-medium sm:px-5">Activo</th>
+              <th className="px-3 py-3 font-medium sm:px-5">Precio</th>
+              <th className="hidden px-5 py-3 font-medium sm:table-cell">Tendencia</th>
+              <th className="hidden px-5 py-3 font-medium text-right sm:table-cell">Retorno anual.</th>
+              <th className="hidden px-5 py-3 font-medium text-right md:table-cell">Volatilidad</th>
+              <th className="hidden px-5 py-3 font-medium text-right md:table-cell">Sharpe</th>
+              <th className="px-3 py-3 font-medium text-right sm:px-5">
                 <span className="inline-flex items-center gap-1.5">
                   Alfia Score
                   <InfoModal title="¿Cómo se calcula el Alfia Score?">
@@ -169,7 +169,7 @@ export function ScreenerTable({
                   </InfoModal>
                 </span>
               </th>
-              <th className="px-5 py-3 font-medium text-right">
+              <th className="px-3 py-3 font-medium text-right sm:px-5">
                 <span className="inline-flex items-center gap-1.5">
                   Señal
                   <InfoModal title="¿Cómo se calcula la señal?">
@@ -186,7 +186,7 @@ export function ScreenerTable({
           <tbody className="divide-y divide-border">
             {filtered.map((row) => (
               <tr key={row.symbol} className="hover:bg-surface-2">
-                <td className="px-5 py-3">
+                <td className="px-3 py-3 sm:px-5">
                   <input
                     type="checkbox"
                     checked={selected.has(row.symbol)}
@@ -199,7 +199,7 @@ export function ScreenerTable({
                     className="h-4 w-4 accent-green-bright"
                   />
                 </td>
-                <td className="px-5 py-3">
+                <td className="px-3 py-3 sm:px-5">
                   <Link href={`/activos/${row.symbol}`} className="block">
                     <p className="font-data font-medium text-text">{row.symbol}</p>
                     <p className="text-xs text-text-muted">
@@ -207,7 +207,7 @@ export function ScreenerTable({
                     </p>
                   </Link>
                 </td>
-                <td className="px-5 py-3 font-data text-text">
+                <td className="px-3 py-3 font-data text-text sm:px-5">
                   ${row.price.toLocaleString("es")}
                   <span
                     className={`ml-2 text-xs ${row.changePct >= 0 ? "text-data-up" : "text-data-down"}`}
@@ -216,24 +216,24 @@ export function ScreenerTable({
                     {(row.changePct * 100).toFixed(2)}%
                   </span>
                 </td>
-                <td className="px-5 py-3">
+                <td className="hidden px-5 py-3 sm:table-cell">
                   <Sparkline values={row.sparkline} up={row.changePct >= 0} />
                 </td>
                 <td
-                  className={`px-5 py-3 text-right font-data ${row.annualizedReturn >= 0 ? "text-data-up" : "text-data-down"}`}
+                  className={`hidden px-5 py-3 text-right font-data sm:table-cell ${row.annualizedReturn >= 0 ? "text-data-up" : "text-data-down"}`}
                 >
                   {(row.annualizedReturn * 100).toFixed(1)}%
                 </td>
-                <td className="px-5 py-3 text-right font-data text-text">
+                <td className="hidden px-5 py-3 text-right font-data text-text md:table-cell">
                   {(row.annualizedVolatility * 100).toFixed(1)}%
                 </td>
-                <td className="px-5 py-3 text-right font-data text-text">
+                <td className="hidden px-5 py-3 text-right font-data text-text md:table-cell">
                   {row.sharpeRatio.toFixed(2)}
                 </td>
-                <td className={`px-5 py-3 text-right font-data font-semibold ${scoreTone(row.alfiaScore)}`}>
+                <td className={`px-3 py-3 text-right font-data font-semibold sm:px-5 ${scoreTone(row.alfiaScore)}`}>
                   {row.alfiaScore}
                 </td>
-                <td className={`px-5 py-3 text-right text-xs font-medium ${signalTone(screenerSignal(row))}`}>
+                <td className={`px-3 py-3 text-right text-xs font-medium sm:px-5 ${signalTone(screenerSignal(row))}`}>
                   {screenerSignal(row)}
                 </td>
               </tr>
