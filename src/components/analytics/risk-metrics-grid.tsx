@@ -45,9 +45,9 @@ export function RiskMetricsGrid({ metrics }: { metrics: RiskMetrics }) {
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+    <div className="grid grid-cols-2 gap-x-6 gap-y-4 border-t border-border pt-4 sm:grid-cols-5">
       {items.map((item) => (
-        <div key={item.label} className="rounded-lg border border-border bg-surface-2 p-4">
+        <div key={item.label}>
           <div className="flex items-center gap-1.5">
             <p className="text-xs text-text-muted">{item.label}</p>
             <InfoModal title={item.label}>{item.explanation}</InfoModal>

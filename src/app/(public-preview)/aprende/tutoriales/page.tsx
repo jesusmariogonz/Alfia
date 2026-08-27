@@ -26,7 +26,7 @@ export default async function TutorialesPage() {
           <Link
             key={tutorial.slug}
             href={`/aprende/tutoriales/${tutorial.slug}`}
-            className="rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-6 transition-colors hover:border-green-bright/40"
+            className="p-6 transition-colors hover:border-green-bright/40"
           >
             <p className="font-display font-medium text-text">{tutorial.title}</p>
             <p className="mt-1.5 text-sm text-text-muted">{tutorial.summary}</p>

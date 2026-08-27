@@ -22,7 +22,7 @@ export function PublicPreviewShell({ children }: { children: React.ReactNode }) 
       </div>
       <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">{children}</main>
       <div className="mx-auto w-full max-w-6xl px-6 pb-12">
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-6">
+        <div className="flex flex-wrap items-center justify-between gap-4 p-6">
           <p className="text-sm text-text-muted">
             Crea tu cuenta gratis y empieza con 20 créditos de bienvenida.
           </p>

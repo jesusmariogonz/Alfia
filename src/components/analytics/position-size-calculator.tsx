@@ -17,7 +17,7 @@ export function PositionSizeCalculator({ currentPrice }: { currentPrice: number 
   const invalid = entry === stop;
 
   return (
-    <div className="rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-5">
+    <div className="p-5">
       <div className="flex items-center gap-2">
         <p className="text-sm font-medium text-text">Calculadora de posición</p>
         <InfoModal title="¿Cómo se calcula?">
@@ -75,24 +75,24 @@ export function PositionSizeCalculator({ currentPrice }: { currentPrice: number 
           El precio de entrada y el de stop-loss no pueden ser iguales.
         </p>
       ) : (
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-lg border border-border bg-surface-2 p-3">
+        <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-border pt-4 sm:grid-cols-4">
+          <div>
             <p className="text-xs text-text-muted">Acciones a comprar</p>
             <p className="mt-1 font-data text-lg font-semibold text-text">{shares.toLocaleString("es")}</p>
           </div>
-          <div className="rounded-lg border border-border bg-surface-2 p-3">
+          <div>
             <p className="text-xs text-text-muted">Monto en riesgo</p>
             <p className="mt-1 font-data text-lg font-semibold text-data-down">
               ${riskAmount.toLocaleString("es", { maximumFractionDigits: 0 })}
             </p>
           </div>
-          <div className="rounded-lg border border-border bg-surface-2 p-3">
+          <div>
             <p className="text-xs text-text-muted">Valor de la posición</p>
             <p className="mt-1 font-data text-lg font-semibold text-text">
               ${positionValue.toLocaleString("es", { maximumFractionDigits: 0 })}
             </p>
           </div>
-          <div className="rounded-lg border border-border bg-surface-2 p-3">
+          <div>
             <p className="text-xs text-text-muted">% del capital</p>
             <p className="mt-1 font-data text-lg font-semibold text-text">{pctOfCapital.toFixed(1)}%</p>
           </div>

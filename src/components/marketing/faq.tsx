@@ -25,7 +25,7 @@ export function Faq() {
       <h2 className="text-center font-display text-3xl font-semibold tracking-tight text-text md:text-4xl">
         Preguntas frecuentes
       </h2>
-      <div className="mt-10 divide-y divide-border rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)]">
+      <div className="mt-10 divide-y divide-border">
         {items.map((item) => (
           <div key={item.q} className="p-6">
             <h3 className="font-display text-base font-medium text-text">

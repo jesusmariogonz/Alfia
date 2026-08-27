@@ -63,7 +63,7 @@ export default async function WatchlistPage() {
       </p>
 
       {rows.length === 0 ? (
-        <div className="mt-6 flex flex-col items-center gap-4 rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-12 text-center">
+        <div className="mt-6 flex flex-col items-center gap-4 p-12 text-center">
           <p className="font-display text-lg font-medium text-text">
             Todavía no sigues ningún activo
           </p>
@@ -76,7 +76,7 @@ export default async function WatchlistPage() {
           </Link>
         </div>
       ) : (
-        <div className="mt-6 overflow-x-auto rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)]">
+        <div className="mt-6 overflow-x-auto">
           <table className="w-full min-w-[760px] text-left text-sm">
             <thead>
               <tr className="border-b border-border text-text-muted">

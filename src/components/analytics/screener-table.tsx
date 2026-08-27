@@ -86,7 +86,7 @@ export function ScreenerTable({
 
   return (
     <div>
-      <div className="flex flex-wrap items-end gap-4 rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-5">
+      <div className="flex flex-wrap items-end gap-4 border-b border-border pb-5">
         <div className="flex flex-col gap-1.5">
           <label className="text-xs text-text-muted">Buscar activo</label>
           <input
@@ -141,7 +141,7 @@ export function ScreenerTable({
         </p>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)]">
+      <div className="mt-4 overflow-x-auto">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead>
             <tr className="border-b border-border text-text-muted">

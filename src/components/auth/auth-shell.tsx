@@ -24,7 +24,7 @@ export function AuthShell({
       <Link href="/" className="mb-8">
         <LogoLockup />
       </Link>
-      <div className="w-full max-w-sm rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-8">
+      <div className="w-full max-w-sm p-8">
         <h1 className="font-display text-xl font-semibold text-text">{title}</h1>
         <p className="mt-1.5 text-sm text-text-muted">{subtitle}</p>
         <div className="mt-6">{children}</div>

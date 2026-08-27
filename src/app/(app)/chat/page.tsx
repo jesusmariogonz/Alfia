@@ -20,7 +20,7 @@ export default async function ChatPage() {
 
   if (!canUseChat(profile?.plan ?? "free")) {
     return (
-      <div className="flex flex-col items-center gap-4 rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-12 text-center">
+      <div className="flex flex-col items-center gap-4 p-12 text-center">
         <Badge tone="gold">Pro</Badge>
         <p className="font-display text-lg font-medium text-text">
           El chat de inversión es una función de Pro
