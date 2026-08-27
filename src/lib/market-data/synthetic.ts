@@ -37,6 +37,7 @@ export type Candle = {
   open: number;
   high: number;
   low: number;
+  volume: number;
 };
 
 /**
@@ -76,12 +77,16 @@ export function getHistoricalCloses(
     const swing = close * intradayScale * rand();
     const high = Math.max(open, close) + swing * rand();
     const low = Math.min(open, close) - swing * rand();
+    const dailyMovePct = Math.abs(close / prevClose - 1);
+    const baseVolume = basePrice > 500 ? 3_000_000 : basePrice > 50 ? 15_000_000 : 40_000_000;
+    const volume = Math.round(baseVolume * (0.6 + rand() * 0.8) * (1 + dailyMovePct * 8));
     return {
       date: date.toISOString().slice(0, 10),
       close: Number(close.toFixed(2)),
       open: Number(open.toFixed(2)),
       high: Number(high.toFixed(2)),
       low: Number(low.toFixed(2)),
+      volume,
     };
   });
 }

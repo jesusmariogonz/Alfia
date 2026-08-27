@@ -26,6 +26,9 @@ function pathFromPoints(points: { x: number; y: number }[]): string {
 }
 
 function formatDate(dateStr: string): string {
+  if (dateStr.includes("T")) {
+    return new Date(dateStr).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
+  }
   return new Date(dateStr + "T00:00:00").toLocaleDateString("es", { day: "numeric", month: "short" });
 }
 
@@ -62,10 +65,15 @@ export function NormalizedLineChart({
   series,
   overlays = [],
   height = 260,
+  valueMode = "percent",
+  scale = "linear",
 }: {
   series: { symbol: string; candles: Candle[] }[];
   overlays?: ("sma20" | "sma50")[];
   height?: number;
+  /** "price" solo tiene efecto con un único activo — con varios siempre se normaliza a %. */
+  valueMode?: "percent" | "price";
+  scale?: "linear" | "log";
 }) {
   const width = 800;
   const padding = 8;
@@ -78,7 +86,11 @@ export function NormalizedLineChart({
     return <p className="text-sm text-text-muted">No hay suficientes datos para graficar.</p>;
   }
 
+  const usePriceMode = valueMode === "price" && usable.length === 1;
+  const transform = (v: number) => (scale === "log" && usePriceMode ? Math.log(Math.max(v, 0.0001)) : v);
+
   const normalizedSeries = usable.map((s) => {
+    if (usePriceMode) return s.candles.map((c) => transform(c.close));
     const base = s.candles[0].close;
     return s.candles.map((c) => (c.close / base - 1) * 100);
   });
@@ -96,7 +108,7 @@ export function NormalizedLineChart({
       .map((v, i, arr) => (v === null ? null : { x: xAt(i, arr.length), y: yAt(v) }))
       .filter((p): p is { x: number; y: number } => p !== null);
 
-  const zeroY = yAt(0);
+  const referenceY = usePriceMode ? yAt(normalizedSeries[0][0]) : yAt(0);
   const isSingle = usable.length === 1;
 
   return (
@@ -121,7 +133,7 @@ export function NormalizedLineChart({
             </linearGradient>
           </defs>
         )}
-        <line x1={0} x2={width} y1={zeroY} y2={zeroY} stroke="var(--border)" strokeDasharray="4 4" />
+        <line x1={0} x2={width} y1={referenceY} y2={referenceY} stroke="var(--border)" strokeDasharray="4 4" />
 
         {isSingle &&
           (() => {
@@ -184,8 +196,13 @@ export function NormalizedLineChart({
             {usable.map((s, i) => (
               <span key={s.symbol} className="flex items-center gap-1.5 font-data">
                 <span className="h-2 w-2 rounded-full" style={{ backgroundColor: SERIES_COLORS[i % SERIES_COLORS.length] }} />
-                {s.symbol}: ${s.candles[hoverIndex].close.toLocaleString("es")} ({normalizedSeries[i][hoverIndex] >= 0 ? "+" : ""}
-                {normalizedSeries[i][hoverIndex].toFixed(2)}%)
+                {s.symbol}: ${s.candles[hoverIndex].close.toLocaleString("es")}
+                {!usePriceMode && (
+                  <>
+                    {" "}({normalizedSeries[i][hoverIndex] >= 0 ? "+" : ""}
+                    {normalizedSeries[i][hoverIndex].toFixed(2)}%)
+                  </>
+                )}
               </span>
             ))}
           </div>

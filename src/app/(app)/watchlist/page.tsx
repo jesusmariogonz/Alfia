@@ -1,10 +1,25 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { findAsset, getCloses } from "@/lib/market-data";
+import { computeRiskMetrics } from "@/lib/analytics/metrics";
+import { computeAlfiaScore } from "@/lib/analytics/score";
 import { Sparkline } from "@/components/analytics/sparkline";
 import { RemoveFromWatchlistButton } from "@/components/analytics/remove-from-watchlist-button";
 import { Button } from "@/components/ui/button";
 import type { WatchlistItem } from "@/types/database";
+
+function fmtVolume(n: number) {
+  if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(2)}B`;
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return n.toLocaleString("es");
+}
+
+function scoreTone(score: number): string {
+  if (score >= 65) return "text-data-up";
+  if (score >= 40) return "text-gold";
+  return "text-data-down";
+}
 
 export default async function WatchlistPage() {
   const supabase = await createClient();
@@ -25,9 +40,17 @@ export default async function WatchlistPage() {
         const asset = findAsset(item.symbol);
         if (!asset) return null;
         const closes = (await getCloses(asset.symbol))!;
-        const last = closes[closes.length - 1].close;
+        const last = closes[closes.length - 1];
         const prev = closes[closes.length - 2].close;
-        return { asset, price: last, changePct: last / prev - 1, closes };
+        const metrics = computeRiskMetrics(closes);
+        return {
+          asset,
+          price: last.close,
+          changePct: last.close / prev - 1,
+          volume: last.volume,
+          alfiaScore: computeAlfiaScore(metrics),
+          closes,
+        };
       }),
     )
   ).filter((r): r is NonNullable<typeof r> => r !== null);
@@ -53,29 +76,56 @@ export default async function WatchlistPage() {
           </Link>
         </div>
       ) : (
-        <div className="mt-6 divide-y divide-border rounded-xl border border-border bg-surface">
-          {rows.map((row) => (
-            <div key={row.asset.symbol} className="flex items-center justify-between gap-4 p-5">
-              <Link href={`/activos/${row.asset.symbol}`} className="min-w-0 flex-1">
-                <p className="font-data font-medium text-text">{row.asset.symbol}</p>
-                <p className="text-xs text-text-muted">{row.asset.name}</p>
-              </Link>
-              <div className="text-right">
-                <p className="font-data text-text">${row.price.toLocaleString("es")}</p>
-                <p
-                  className={`font-data text-xs ${row.changePct >= 0 ? "text-data-up" : "text-data-down"}`}
-                >
-                  {row.changePct >= 0 ? "+" : ""}
-                  {(row.changePct * 100).toFixed(2)}%
-                </p>
-              </div>
-              <Sparkline
-                values={row.closes.slice(-60).map((c) => c.close)}
-                up={row.changePct >= 0}
-              />
-              <RemoveFromWatchlistButton symbol={row.asset.symbol} />
-            </div>
-          ))}
+        <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">
+          <table className="w-full min-w-[760px] text-left text-sm">
+            <thead>
+              <tr className="border-b border-border text-text-muted">
+                <th className="px-5 py-3 font-medium">Activo</th>
+                <th className="px-5 py-3 font-medium text-right">Precio</th>
+                <th className="px-5 py-3 font-medium text-right">Cambio</th>
+                <th className="px-5 py-3 font-medium text-right">Volumen</th>
+                <th className="px-5 py-3 font-medium">Tendencia</th>
+                <th className="px-5 py-3 font-medium text-right">Alfia Score</th>
+                <th className="px-5 py-3 font-medium text-right"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {rows.map((row) => (
+                <tr key={row.asset.symbol} className="hover:bg-surface-2">
+                  <td className="px-5 py-3">
+                    <Link href={`/activos/${row.asset.symbol}`} className="block">
+                      <p className="font-data font-medium text-text">{row.asset.symbol}</p>
+                      <p className="text-xs text-text-muted">{row.asset.name}</p>
+                    </Link>
+                  </td>
+                  <td className="px-5 py-3 text-right font-data text-text">
+                    ${row.price.toLocaleString("es")}
+                  </td>
+                  <td
+                    className={`px-5 py-3 text-right font-data ${row.changePct >= 0 ? "text-data-up" : "text-data-down"}`}
+                  >
+                    {row.changePct >= 0 ? "+" : ""}
+                    {(row.changePct * 100).toFixed(2)}%
+                  </td>
+                  <td className="px-5 py-3 text-right font-data text-text-muted">
+                    {fmtVolume(row.volume)}
+                  </td>
+                  <td className="w-32 px-5 py-3">
+                    <Sparkline
+                      values={row.closes.slice(-60).map((c) => c.close)}
+                      up={row.changePct >= 0}
+                    />
+                  </td>
+                  <td className={`px-5 py-3 text-right font-data font-semibold ${scoreTone(row.alfiaScore)}`}>
+                    {row.alfiaScore}
+                  </td>
+                  <td className="px-5 py-3 text-right">
+                    <RemoveFromWatchlistButton symbol={row.asset.symbol} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

@@ -10,6 +10,7 @@ type FinnhubCandleResponse = {
   o: number[]; // apertura
   h: number[]; // máximo
   l: number[]; // mínimo
+  v: number[]; // volumen
   t: number[]; // timestamps (unix, segundos)
   s: "ok" | "no_data";
 };
@@ -68,10 +69,9 @@ export async function fetchMarketNews(): Promise<FinnhubNewsArticle[] | null> {
  * red — en todos esos casos el llamador cae de vuelta al generador
  * sintético.
  */
-export async function fetchDailyCandles(
-  symbol: string,
-  days: number,
-): Promise<{ date: string; close: number; open: number; high: number; low: number }[] | null> {
+type CandleOut = { date: string; close: number; open: number; high: number; low: number; volume: number };
+
+export async function fetchDailyCandles(symbol: string, days: number): Promise<CandleOut[] | null> {
   const to = Math.floor(Date.now() / 1000);
   const from = to - days * 24 * 60 * 60;
 
@@ -90,5 +90,35 @@ export async function fetchDailyCandles(
     open: data.o[i],
     high: data.h[i],
     low: data.l[i],
+    volume: data.v[i],
+  }));
+}
+
+/**
+ * Velas intradía (resolución de 5 min) del día en curso, para el tab "1D".
+ * Solo tiene sentido para activos con datos reales de Finnhub — cripto y el
+ * fallback sintético no tienen intradía, así que null es una respuesta
+ * válida ahí (el llamador oculta el tab 1D en ese caso).
+ */
+export async function fetchIntradayCandles(symbol: string): Promise<CandleOut[] | null> {
+  const to = Math.floor(Date.now() / 1000);
+  const from = to - 24 * 60 * 60;
+
+  const data = await finnhubFetch<FinnhubCandleResponse>("/stock/candle", {
+    symbol,
+    resolution: "5",
+    from: String(from),
+    to: String(to),
+  });
+
+  if (!data || data.s !== "ok" || data.c.length === 0) return null;
+
+  return data.t.map((timestamp, i) => ({
+    date: new Date(timestamp * 1000).toISOString(),
+    close: data.c[i],
+    open: data.o[i],
+    high: data.h[i],
+    low: data.l[i],
+    volume: data.v[i],
   }));
 }

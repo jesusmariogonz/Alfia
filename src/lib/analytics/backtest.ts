@@ -94,6 +94,7 @@ export function runBacktest(closes: Candle[], strategy: StrategyConfig): Backtes
     open: v,
     high: v,
     low: v,
+    volume: 0,
   }));
 
   return {

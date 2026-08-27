@@ -1,6 +1,6 @@
 import { findAsset, UNIVERSE, type UniverseAsset } from "./universe";
 import { getHistoricalCloses, type Candle } from "./synthetic";
-import { fetchQuote, fetchDailyCandles, fetchMarketNews } from "./finnhub";
+import { fetchQuote, fetchDailyCandles, fetchIntradayCandles, fetchMarketNews } from "./finnhub";
 
 export { fetchMarketNews };
 export type { FinnhubNewsArticle } from "./finnhub";
@@ -47,6 +47,18 @@ export async function getCloses(symbol: string): Promise<Candle[] | null> {
     const real = await fetchDailyCandles(asset.symbol, 504);
     return real ?? syntheticCloses(asset);
   });
+}
+
+const INTRADAY_CACHE_TTL_MS = 5 * 60 * 1000;
+
+/** Velas de 5 min del día en curso, para el tab "1D". Null si no aplica (cripto, sin Finnhub, o mercado sin datos aún). */
+export async function getIntradayCloses(symbol: string): Promise<Candle[] | null> {
+  const asset = findAsset(symbol);
+  if (!asset || !supportsRealData(asset)) return null;
+
+  return cached(`intraday:${asset.symbol}`, INTRADAY_CACHE_TTL_MS, () =>
+    fetchIntradayCandles(asset.symbol),
+  );
 }
 
 export async function getQuote(symbol: string) {

@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { findAsset, getCloses } from "@/lib/market-data";
+import { findAsset, getCloses, getIntradayCloses } from "@/lib/market-data";
 import { computeRiskMetrics } from "@/lib/analytics/metrics";
 import { computeAlfiaScore, scoreLabel } from "@/lib/analytics/score";
 import { AssetChartPanel } from "@/components/analytics/asset-chart-panel";
+import { QuoteStats } from "@/components/analytics/quote-stats";
 import { RiskMetricsGrid } from "@/components/analytics/risk-metrics-grid";
 import { WatchlistToggleButton } from "@/components/analytics/watchlist-toggle-button";
 import { PositionForm } from "@/components/portfolio/position-form";
@@ -25,7 +26,11 @@ export default async function ActivoPage({
   const asset = findAsset(symbol);
   if (!asset) notFound();
 
-  const closes = (await getCloses(asset.symbol))!;
+  const [closes, intraday] = await Promise.all([
+    getCloses(asset.symbol),
+    getIntradayCloses(asset.symbol),
+  ]);
+  if (!closes) notFound();
   const metrics = computeRiskMetrics(closes);
   const score = computeAlfiaScore(metrics);
   const last = closes[closes.length - 1].close;
@@ -91,7 +96,14 @@ export default async function ActivoPage({
         )}
       </div>
 
-      <AssetChartPanel symbol={asset.symbol} candles={closes} plan={profile?.plan ?? "free"} />
+      <AssetChartPanel
+        symbol={asset.symbol}
+        candles={closes}
+        intraday={intraday}
+        plan={profile?.plan ?? "free"}
+      />
+
+      <QuoteStats closes={closes} />
 
       <div>
         <h2 className="font-display text-lg font-medium text-text">
