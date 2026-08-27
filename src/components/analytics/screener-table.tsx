@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Sparkline } from "@/components/analytics/sparkline";
+import { InfoModal } from "@/components/ui/info-modal";
 import type { AssetClass } from "@/lib/market-data";
 
 export type ScreenerRow = {
@@ -23,6 +24,26 @@ function scoreTone(score: number): string {
   if (score >= 65) return "text-data-up";
   if (score >= 40) return "text-gold";
   return "text-data-down";
+}
+
+type Signal = "Retener" | "Vigilar" | "Vender";
+
+/**
+ * Señal orientativa, no una recomendación: combina el Alfia Score (riesgo +
+ * desempeño histórico) con el retorno anualizado. Un score bajo con retorno
+ * negativo se marca "Vender" (peor combinación), un score alto con retorno
+ * positivo "Retener"; todo lo intermedio queda como "Vigilar".
+ */
+function screenerSignal(row: Pick<ScreenerRow, "alfiaScore" | "annualizedReturn">): Signal {
+  if (row.alfiaScore >= 60 && row.annualizedReturn > 0) return "Retener";
+  if (row.alfiaScore < 35 && row.annualizedReturn < 0) return "Vender";
+  return "Vigilar";
+}
+
+function signalTone(signal: Signal): string {
+  if (signal === "Retener") return "text-data-up";
+  if (signal === "Vender") return "text-data-down";
+  return "text-gold";
 }
 
 const ASSET_CLASS_LABEL: Record<AssetClass, string> = {
@@ -119,7 +140,30 @@ export function ScreenerTable({ rows }: { rows: ScreenerRow[] }) {
               <th className="px-5 py-3 font-medium text-right">Retorno anual.</th>
               <th className="px-5 py-3 font-medium text-right">Volatilidad</th>
               <th className="px-5 py-3 font-medium text-right">Sharpe</th>
-              <th className="px-5 py-3 font-medium text-right">Alfia Score</th>
+              <th className="px-5 py-3 font-medium text-right">
+                <span className="inline-flex items-center gap-1.5">
+                  Alfia Score
+                  <InfoModal title="¿Cómo se calcula el Alfia Score?">
+                    Combina cuatro métricas de los últimos 2 años en un solo número
+                    de 0 a 100: Sharpe ratio (40%), retorno anualizado (25%),
+                    volatilidad anualizada (20%, a menor volatilidad más puntos) y
+                    máximo drawdown (15%, a menor caída más puntos). No es una
+                    recomendación de compra ni venta.
+                  </InfoModal>
+                </span>
+              </th>
+              <th className="px-5 py-3 font-medium text-right">
+                <span className="inline-flex items-center gap-1.5">
+                  Señal
+                  <InfoModal title="¿Cómo se calcula la señal?">
+                    Es orientativa, no una recomendación de inversión. Combina el
+                    Alfia Score con el retorno anualizado: score alto (≥60) y
+                    retorno positivo se marca &ldquo;Retener&rdquo;; score bajo
+                    (&lt;35) y retorno negativo se marca &ldquo;Vender&rdquo;; el
+                    resto queda como &ldquo;Vigilar&rdquo;.
+                  </InfoModal>
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -159,11 +203,14 @@ export function ScreenerTable({ rows }: { rows: ScreenerRow[] }) {
                 <td className={`px-5 py-3 text-right font-data font-semibold ${scoreTone(row.alfiaScore)}`}>
                   {row.alfiaScore}
                 </td>
+                <td className={`px-5 py-3 text-right text-xs font-medium ${signalTone(screenerSignal(row))}`}>
+                  {screenerSignal(row)}
+                </td>
               </tr>
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-5 py-8 text-center text-text-muted">
+                <td colSpan={8} className="px-5 py-8 text-center text-text-muted">
                   Ningún activo cumple estos filtros. Prueba ampliarlos.
                 </td>
               </tr>

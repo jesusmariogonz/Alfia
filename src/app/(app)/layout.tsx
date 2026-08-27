@@ -24,7 +24,11 @@ export default async function AppLayout({
     .single<Profile>();
 
   return (
-    <AppShell email={user.email ?? ""} creditBalance={profile?.credit_balance ?? 0}>
+    <AppShell
+      email={user.email ?? ""}
+      creditBalance={profile?.credit_balance ?? 0}
+      plan={profile?.plan}
+    >
       {children}
     </AppShell>
   );

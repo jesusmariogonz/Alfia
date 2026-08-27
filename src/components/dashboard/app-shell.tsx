@@ -1,14 +1,17 @@
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
 import { CreditChip } from "@/components/dashboard/credit-chip";
+import type { Plan } from "@/types/database";
 
 export function AppShell({
   email,
   creditBalance,
+  plan,
   children,
 }: {
   email: string;
   creditBalance: number;
+  plan?: Plan;
   children: React.ReactNode;
 }) {
   return (
@@ -18,7 +21,7 @@ export function AppShell({
       <div className="flex flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-border px-6 py-4">
           <p className="text-sm text-text-muted">{email}</p>
-          <CreditChip balance={creditBalance} />
+          {plan === "pro" ? <CreditChip balance={creditBalance} /> : null}
         </header>
         <main className="flex-1 px-6 py-8">{children}</main>
       </div>

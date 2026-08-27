@@ -11,6 +11,7 @@ import { PositionForm } from "@/components/portfolio/position-form";
 import { PositionLocked } from "@/components/portfolio/position-locked";
 import { canOpenPositions } from "@/lib/plan";
 import { Badge } from "@/components/ui/badge";
+import { InfoModal } from "@/components/ui/info-modal";
 import { Button } from "@/components/ui/button";
 import { Disclaimer } from "@/components/ui/disclaimer";
 import type { Profile } from "@/types/database";
@@ -68,6 +69,14 @@ export default async function ActivoPage({
             <Badge tone={score >= 65 ? "green" : score >= 40 ? "gold" : "neutral"}>
               Alfia Score {score} · {scoreLabel(score)}
             </Badge>
+            <InfoModal title="¿Cómo se calcula el Alfia Score?">
+              Combina cuatro métricas de los últimos 2 años en un solo número de 0
+              a 100, para comparar activos rápido: Sharpe ratio (40%), retorno
+              anualizado (25%), volatilidad anualizada —a menor volatilidad, más
+              puntos— (20%) y máximo drawdown —a menor caída, más puntos— (15%).
+              No es una recomendación de compra ni venta, es un resumen de riesgo
+              y desempeño histórico.
+            </InfoModal>
           </div>
         </div>
         {user ? (
@@ -117,16 +126,24 @@ export default async function ActivoPage({
           <PositionLocked />
         )}
         <div className="rounded-xl border border-border bg-surface p-5">
-          <p className="text-sm font-medium text-text">
-            Simulaciones, comparaciones y recomendaciones
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-medium text-text">
+              Simulaciones, comparaciones y recomendaciones
+            </p>
+            <Badge tone="gold">Pro</Badge>
+          </div>
           <p className="mt-1 text-xs text-text-muted">
-            Pregúntale al chat de Alfia (Pro) — por ejemplo &ldquo;simula invertir
-            $10,000 en {asset.symbol} a 1 año&rdquo; o &ldquo;debería comprar{" "}
-            {asset.symbol}?&rdquo;.
+            Pregúntale al chat de Alfia (solo plan Pro) — por ejemplo &ldquo;simula
+            invertir $10,000 en {asset.symbol} a 1 año&rdquo; o &ldquo;debería
+            comprar {asset.symbol}?&rdquo;.
           </p>
-          <Link href="/chat" className="mt-3 inline-block">
-            <Button variant="secondary">Ir al chat</Button>
+          <Link
+            href={profile?.plan === "pro" ? "/chat" : "/creditos"}
+            className="mt-3 inline-block"
+          >
+            <Button variant="secondary">
+              {profile?.plan === "pro" ? "Ir al chat" : "Ver planes"}
+            </Button>
           </Link>
         </div>
       </div>
