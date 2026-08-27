@@ -1,6 +1,7 @@
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
 import { CreditChip } from "@/components/dashboard/credit-chip";
+import { IndicesStrip } from "@/components/dashboard/indices-strip";
 import { canUseChat } from "@/lib/plan";
 import type { Plan } from "@/types/database";
 
@@ -32,6 +33,7 @@ export function AppShell({
           <p className="text-sm text-text-muted">{email}</p>
           {plan && canUseChat(plan) ? <CreditChip balance={creditBalance} /> : null}
         </header>
+        <IndicesStrip />
         <main className="flex-1 px-6 py-8">{children}</main>
       </div>
     </div>

@@ -32,6 +32,8 @@ export const UNIVERSE: UniverseAsset[] = [
   { symbol: "PG", name: "Procter & Gamble", sector: "Consumo básico", assetClass: "accion", basePrice: 171.02, annualDrift: 0.07, annualVolatility: 0.15 },
   { symbol: "SPY", name: "SPDR S&P 500 ETF", sector: "Índice", assetClass: "etf", basePrice: 553.21, annualDrift: 0.10, annualVolatility: 0.17 },
   { symbol: "QQQ", name: "Invesco QQQ Trust", sector: "Índice", assetClass: "etf", basePrice: 481.60, annualDrift: 0.13, annualVolatility: 0.22 },
+  { symbol: "DIA", name: "SPDR Dow Jones Industrial Average ETF", sector: "Índice", assetClass: "etf", basePrice: 412.30, annualDrift: 0.08, annualVolatility: 0.15 },
+  { symbol: "IWM", name: "iShares Russell 2000 ETF", sector: "Índice", assetClass: "etf", basePrice: 218.40, annualDrift: 0.07, annualVolatility: 0.21 },
   { symbol: "BTC", name: "Bitcoin", sector: "Cripto", assetClass: "cripto", basePrice: 61204, annualDrift: 0.20, annualVolatility: 0.65 },
   { symbol: "ETH", name: "Ethereum", sector: "Cripto", assetClass: "cripto", basePrice: 3012, annualDrift: 0.18, annualVolatility: 0.75 },
   { symbol: "GLD", name: "SPDR Gold Shares", sector: "Refugio (oro)", assetClass: "etf", basePrice: 245.80, annualDrift: 0.09, annualVolatility: 0.14 },

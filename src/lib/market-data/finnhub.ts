@@ -53,6 +53,7 @@ export type FinnhubNewsArticle = {
   source: string;
   summary: string;
   url: string;
+  image: string;
   datetime: number; // unix seconds
   category: string;
 };

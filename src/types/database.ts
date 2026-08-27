@@ -93,6 +93,7 @@ export type NewsItem = {
   source: string;
   summary: string | null;
   sentiment: "positivo" | "negativo" | "neutral";
+  image_url: string | null;
   published_at: string;
   created_at: string;
 };

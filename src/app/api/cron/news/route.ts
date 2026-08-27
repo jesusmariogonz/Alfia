@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
       source: a.source,
       summary: a.summary || null,
       sentiment: classifySentiment(`${a.headline} ${a.summary ?? ""}`),
+      image_url: a.image || null,
       published_at: new Date(a.datetime * 1000).toISOString(),
     }));
 

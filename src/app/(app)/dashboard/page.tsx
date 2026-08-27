@@ -151,7 +151,7 @@ export default async function DashboardPage() {
           Noticias con sentimiento
         </h2>
         <div className="mt-4">
-          <NewsFeed limit={isFree ? 1 : undefined} />
+          <NewsFeed limit={isFree ? 1 : undefined} hero />
         </div>
       </section>
     </div>
