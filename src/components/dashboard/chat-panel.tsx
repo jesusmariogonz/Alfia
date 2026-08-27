@@ -3,6 +3,8 @@
 import { useState, FormEvent, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Disclaimer } from "@/components/ui/disclaimer";
+import { ErrorBanner } from "@/components/ui/error-banner";
+import { FormattedText } from "@/components/ui/formatted-text";
 
 type Message = {
   role: "user" | "assistant";
@@ -17,6 +19,7 @@ export function ChatPanel({ initialBalance }: { initialBalance: number }) {
   const [balance, setBalance] = useState(initialBalance);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [insufficientCredits, setInsufficientCredits] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,6 +32,7 @@ export function ChatPanel({ initialBalance }: { initialBalance: number }) {
     if (!text || loading) return;
 
     setError(null);
+    setInsufficientCredits(false);
     setMessages((prev) => [...prev, { role: "user", content: text }]);
     setInput("");
     setLoading(true);
@@ -43,6 +47,7 @@ export function ChatPanel({ initialBalance }: { initialBalance: number }) {
 
       if (!res.ok) {
         setError(data.error ?? "Ocurrió un error al procesar tu consulta.");
+        setInsufficientCredits(res.status === 402);
         setLoading(false);
         return;
       }
@@ -82,10 +87,14 @@ export function ChatPanel({ initialBalance }: { initialBalance: number }) {
               className={`max-w-[80%] rounded-xl px-4 py-3 text-sm leading-relaxed ${
                 m.role === "user"
                   ? "bg-green-bright text-bg"
-                  : "border border-border bg-surface-2 text-text"
+                  : "border border-border bg-surface-2"
               }`}
             >
-              {m.content}
+              {m.role === "assistant" ? (
+                <FormattedText text={m.content} />
+              ) : (
+                m.content
+              )}
             </div>
           </div>
         ))}
@@ -99,9 +108,9 @@ export function ChatPanel({ initialBalance }: { initialBalance: number }) {
       </div>
 
       {error && (
-        <p className="mx-6 mb-2 rounded-lg border border-data-down/30 bg-data-down/10 px-3.5 py-2.5 text-sm text-data-down">
-          {error}
-        </p>
+        <div className="mx-6 mb-2">
+          <ErrorBanner message={error} showCreditsCta={insufficientCredits} />
+        </div>
       )}
 
       <div className="border-t border-border p-4">

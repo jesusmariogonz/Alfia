@@ -4,6 +4,8 @@ import { FormEvent, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Disclaimer } from "@/components/ui/disclaimer";
+import { ErrorBanner } from "@/components/ui/error-banner";
+import { FormattedText } from "@/components/ui/formatted-text";
 import { EquityCurveChart } from "@/components/analytics/equity-curve-chart";
 import { UNIVERSE } from "@/lib/market-data";
 
@@ -35,6 +37,7 @@ export function BacktestPanel({ initialBalance }: { initialBalance: number }) {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [insufficientCredits, setInsufficientCredits] = useState(false);
   const [balance, setBalance] = useState(initialBalance);
   const [data, setData] = useState<Result | null>(null);
 
@@ -46,6 +49,7 @@ export function BacktestPanel({ initialBalance }: { initialBalance: number }) {
     }
     setLoading(true);
     setError(null);
+    setInsufficientCredits(false);
     try {
       const res = await fetch("/api/analytics/backtest", {
         method: "POST",
@@ -55,6 +59,7 @@ export function BacktestPanel({ initialBalance }: { initialBalance: number }) {
       const json = await res.json();
       if (!res.ok) {
         setError(json.error ?? "No se pudo correr el backtest.");
+        setInsufficientCredits(res.status === 402);
         return;
       }
       setData(json);
@@ -110,11 +115,7 @@ export function BacktestPanel({ initialBalance }: { initialBalance: number }) {
         </Button>
       </form>
 
-      {error && (
-        <p className="rounded-lg border border-data-down/30 bg-data-down/10 px-4 py-3 text-sm text-data-down">
-          {error}
-        </p>
-      )}
+      {error && <ErrorBanner message={error} showCreditsCta={insufficientCredits} />}
 
       <p className="font-data text-xs text-text-muted">
         Saldo: {balance.toLocaleString("es")} créditos
@@ -134,7 +135,7 @@ export function BacktestPanel({ initialBalance }: { initialBalance: number }) {
             <Metric label="Máx. drawdown" value={`${(data.result.strategyMaxDrawdown * 100).toFixed(1)}%`} tone="text-data-down" />
             <Metric label="Operaciones" value={String(data.result.trades)} tone="text-text" />
           </div>
-          <p className="mt-4 text-sm leading-relaxed text-text">{data.interpretation}</p>
+          <FormattedText text={data.interpretation} className="mt-4" />
           <Disclaimer className="mt-4" />
         </div>
       )}

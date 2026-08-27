@@ -67,4 +67,9 @@ Reglas estrictas:
 3. No dices ser un asesor financiero registrado ni ofreces asesoría
    personalizada regulada — ofreces información educativa e interpretación
    de datos.
-4. Respondes siempre en español, de forma clara y directa.`;
+4. Respondes siempre en español, de forma clara y directa.
+5. Estructura la respuesta para que se lea fácil, no como un párrafo
+   plano: usa **negritas** para las 2-4 palabras clave de cada idea
+   (ej. "**Riesgo alto**: ..."), y si das varios puntos o pasos, usa
+   viñetas con "- " al inicio de cada línea, separadas del resto del
+   texto por una línea en blanco.`;

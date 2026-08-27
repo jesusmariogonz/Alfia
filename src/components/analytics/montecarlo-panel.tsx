@@ -4,6 +4,8 @@ import { FormEvent, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Disclaimer } from "@/components/ui/disclaimer";
+import { ErrorBanner } from "@/components/ui/error-banner";
+import { FormattedText } from "@/components/ui/formatted-text";
 import { MonteCarloChart } from "@/components/analytics/montecarlo-chart";
 import { UNIVERSE } from "@/lib/market-data";
 
@@ -27,6 +29,7 @@ export function MonteCarloPanel({ initialBalance }: { initialBalance: number }) 
   const [years, setYears] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [insufficientCredits, setInsufficientCredits] = useState(false);
   const [balance, setBalance] = useState(initialBalance);
   const [data, setData] = useState<Result | null>(null);
 
@@ -34,6 +37,7 @@ export function MonteCarloPanel({ initialBalance }: { initialBalance: number }) 
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setInsufficientCredits(false);
     try {
       const res = await fetch("/api/analytics/montecarlo", {
         method: "POST",
@@ -47,6 +51,7 @@ export function MonteCarloPanel({ initialBalance }: { initialBalance: number }) 
       const json = await res.json();
       if (!res.ok) {
         setError(json.error ?? "No se pudo correr la simulación.");
+        setInsufficientCredits(res.status === 402);
         return;
       }
       setData(json);
@@ -107,11 +112,7 @@ export function MonteCarloPanel({ initialBalance }: { initialBalance: number }) 
         </div>
       </form>
 
-      {error && (
-        <p className="rounded-lg border border-data-down/30 bg-data-down/10 px-4 py-3 text-sm text-data-down">
-          {error}
-        </p>
-      )}
+      {error && <ErrorBanner message={error} showCreditsCta={insufficientCredits} />}
 
       <p className="font-data text-xs text-text-muted">
         Saldo: {balance.toLocaleString("es")} créditos
@@ -136,7 +137,7 @@ export function MonteCarloPanel({ initialBalance }: { initialBalance: number }) 
             Probabilidad de terminar con pérdida:{" "}
             {(data.result.probabilityOfLoss * 100).toFixed(1)}%
           </p>
-          <p className="mt-4 text-sm leading-relaxed text-text">{data.interpretation}</p>
+          <FormattedText text={data.interpretation} className="mt-4" />
           <Disclaimer className="mt-4" />
         </div>
       )}

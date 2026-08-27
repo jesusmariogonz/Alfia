@@ -32,21 +32,39 @@ const ASSET_CLASS_LABEL: Record<AssetClass, string> = {
 };
 
 export function ScreenerTable({ rows }: { rows: ScreenerRow[] }) {
+  const [query, setQuery] = useState("");
   const [assetClass, setAssetClass] = useState<AssetClass | "todas">("todas");
   const [minReturn, setMinReturn] = useState<number>(-100);
   const [maxVolatility, setMaxVolatility] = useState<number>(100);
 
   const filtered = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
     return rows
+      .filter(
+        (r) =>
+          !normalizedQuery ||
+          r.symbol.toLowerCase().includes(normalizedQuery) ||
+          r.name.toLowerCase().includes(normalizedQuery),
+      )
       .filter((r) => assetClass === "todas" || r.assetClass === assetClass)
       .filter((r) => r.annualizedReturn * 100 >= minReturn)
       .filter((r) => r.annualizedVolatility * 100 <= maxVolatility)
       .sort((a, b) => b.sharpeRatio - a.sharpeRatio);
-  }, [rows, assetClass, minReturn, maxVolatility]);
+  }, [rows, query, assetClass, minReturn, maxVolatility]);
 
   return (
     <div>
       <div className="flex flex-wrap items-end gap-4 rounded-xl border border-border bg-surface p-5">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs text-text-muted">Buscar activo</label>
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Símbolo o nombre…"
+            className="w-40 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-text placeholder:text-text-muted focus:border-green-bright focus:outline-none"
+          />
+        </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-xs text-text-muted">Tipo de activo</label>
           <select
