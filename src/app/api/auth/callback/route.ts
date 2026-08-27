@@ -8,8 +8,15 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const supabase = await createClient();
-    await supabase.auth.exchangeCodeForSession(code);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error) {
+      return NextResponse.redirect(`${origin}${redirect}`);
+    }
   }
 
-  return NextResponse.redirect(`${origin}${redirect}`);
+  // Sin código, o el código ya no es válido (expiró o ya se usó): en vez de
+  // dejar al usuario sin explicación en la landing, lo mandamos a login con
+  // un mensaje claro — su cuenta puede ya estar confirmada de un intento
+  // anterior, así que "inicia sesión" es la salida correcta.
+  return NextResponse.redirect(`${origin}/login?confirmacion=invalida`);
 }
