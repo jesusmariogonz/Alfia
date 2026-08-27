@@ -15,23 +15,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "No autorizado." }, { status: 401 });
   }
 
-  const content = await generateDeepReport();
-  if (!content) {
-    return NextResponse.json({
-      published: false,
-      reason: "ANTHROPIC_API_KEY no configurada o Claude no respondió.",
-    });
+  const result = await generateDeepReport();
+  if ("error" in result) {
+    return NextResponse.json({ published: false, reason: result.error });
   }
 
   const admin = createAdminClient();
   const today = new Date().toISOString().slice(0, 10);
   const { error } = await admin
     .from("daily_deep_reports")
-    .upsert({ report_date: today, content }, { onConflict: "report_date" });
+    .upsert({ report_date: today, content: result.content }, { onConflict: "report_date" });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ published: true, date: today, hook: content.hook });
+  return NextResponse.json({ published: true, date: today, hook: result.content.hook });
 }

@@ -31,9 +31,11 @@ async function recentHeadlines(): Promise<string[]> {
   return (data ?? []).map((n) => `[${n.sentiment}] ${n.title} (${n.source})`);
 }
 
-export async function generateDeepReport(): Promise<DeepReportContent | null> {
+export async function generateDeepReport(): Promise<
+  { content: DeepReportContent } | { error: string }
+> {
   const anthropic = getAnthropicClient();
-  if (!anthropic) return null;
+  if (!anthropic) return { error: "ANTHROPIC_API_KEY no configurada." };
 
   const report = await computeDailyReport();
   const headlines = await recentHeadlines();
@@ -55,18 +57,27 @@ Escribe el reporte diario completo con este contexto.`;
 
   const response = await anthropic.messages.create({
     model: resolveModel("avanzado"),
-    max_tokens: 3000,
+    max_tokens: 8000,
     system: SYSTEM_PROMPT,
     messages: [{ role: "user", content: userPrompt }],
   });
 
-  const textBlock = response.content.find((b) => b.type === "text");
-  if (!textBlock || textBlock.type !== "text") return null;
+  if (response.stop_reason === "max_tokens") {
+    return { error: "La respuesta de Claude se cortó por límite de tokens antes de completar el JSON." };
+  }
 
+  const textBlock = response.content.find((b) => b.type === "text");
+  if (!textBlock || textBlock.type !== "text") {
+    return { error: "Claude no devolvió un bloque de texto." };
+  }
+
+  const cleaned = textBlock.text.replace(/```(?:json)?/g, "").trim();
   try {
-    const jsonMatch = textBlock.text.match(/\{[\s\S]*\}/);
-    return JSON.parse(jsonMatch ? jsonMatch[0] : textBlock.text) as DeepReportContent;
-  } catch {
-    return null;
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    return { content: JSON.parse(jsonMatch ? jsonMatch[0] : cleaned) as DeepReportContent };
+  } catch (e) {
+    return {
+      error: `JSON inválido: ${e instanceof Error ? e.message : "error desconocido"}. Primeros 300 chars: ${cleaned.slice(0, 300)}`,
+    };
   }
 }
