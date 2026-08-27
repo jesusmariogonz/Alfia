@@ -1,16 +1,33 @@
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
 import { NewsFeed } from "@/components/dashboard/news-feed";
 import { Disclaimer } from "@/components/ui/disclaimer";
+import { Badge } from "@/components/ui/badge";
+import { isFreePlan } from "@/lib/plan";
+import type { Profile } from "@/types/database";
 
-const quickLinks = [
-  { href: "/portafolio", label: "Mi Portafolio", description: "Tus posiciones, riesgo y correlación reunidos" },
+const QUICK_LINKS = [
+  { href: "/portafolio", label: "Mi Portafolio", description: "Tus posiciones, riesgo y correlación reunidos", plusOnly: true },
   { href: "/screener", label: "Screener", description: "Filtra activos por retorno y riesgo" },
   { href: "/comparar", label: "Comparador", description: "Compara dos activos lado a lado" },
   { href: "/simulador", label: "Simulador Montecarlo", description: "Proyecta escenarios de inversión" },
   { href: "/watchlist", label: "Watchlist", description: "Sigue tus activos favoritos" },
 ];
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user!.id)
+    .single<Profile>();
+
+  const isFree = isFreePlan(profile?.plan ?? "free");
+  const quickLinks = isFree ? QUICK_LINKS.filter((l) => !l.plusOnly) : QUICK_LINKS;
+
   const today = new Intl.DateTimeFormat("es", {
     weekday: "long",
     day: "numeric",
@@ -38,6 +55,21 @@ export default function DashboardPage() {
         </div>
       </section>
 
+      {isFree && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gold/30 bg-gold/10 px-5 py-3">
+          <p className="text-sm text-text">
+            <Badge tone="gold">Free</Badge>{" "}
+            <span className="ml-2">
+              Estás viendo la versión básica del dashboard — Básico y Pro incluyen Mi
+              Portafolio y más noticias diarias.
+            </span>
+          </p>
+          <Link href="/creditos" className="text-sm font-medium text-gold hover:underline">
+            Ver planes →
+          </Link>
+        </div>
+      )}
+
       <section>
         <h2 className="font-display text-lg font-medium text-text">Analíticos</h2>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -59,7 +91,7 @@ export default function DashboardPage() {
           Noticias con sentimiento
         </h2>
         <div className="mt-4">
-          <NewsFeed />
+          <NewsFeed limit={isFree ? 1 : undefined} />
         </div>
       </section>
     </div>

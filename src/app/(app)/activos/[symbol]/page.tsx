@@ -9,9 +9,12 @@ import { RiskMetricsGrid } from "@/components/analytics/risk-metrics-grid";
 import { WatchlistToggleButton } from "@/components/analytics/watchlist-toggle-button";
 import { RecommendationPanel } from "@/components/analytics/recommendation-panel";
 import { PositionForm } from "@/components/portfolio/position-form";
+import { PositionLocked } from "@/components/portfolio/position-locked";
+import { canOpenPositions } from "@/lib/plan";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Disclaimer } from "@/components/ui/disclaimer";
+import type { Profile } from "@/types/database";
 
 export default async function ActivoPage({
   params,
@@ -33,12 +36,16 @@ export default async function ActivoPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const { data: watchlistItem } = await supabase
-    .from("watchlist_items")
-    .select("id, invested_usd")
-    .eq("user_id", user!.id)
-    .eq("symbol", asset.symbol)
-    .maybeSingle();
+  const [{ data: watchlistItem }, { data: profile }] = await Promise.all([
+    supabase
+      .from("watchlist_items")
+      .select("id, invested_usd")
+      .eq("user_id", user!.id)
+      .eq("symbol", asset.symbol)
+      .maybeSingle(),
+    supabase.from("profiles").select("*").eq("id", user!.id).single<Profile>(),
+  ]);
+  const canOpenPosition = canOpenPositions(profile?.plan ?? "free");
 
   return (
     <div className="flex flex-col gap-6">
@@ -82,10 +89,14 @@ export default async function ActivoPage({
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <PositionForm
-          symbol={asset.symbol}
-          initialInvestedUsd={watchlistItem?.invested_usd ?? null}
-        />
+        {canOpenPosition ? (
+          <PositionForm
+            symbol={asset.symbol}
+            initialInvestedUsd={watchlistItem?.invested_usd ?? null}
+          />
+        ) : (
+          <PositionLocked />
+        )}
         <RecommendationPanel symbol={asset.symbol} />
       </div>
 

@@ -30,10 +30,11 @@ const sentimentTone: Record<NewsItem["sentiment"], "green" | "neutral"> = {
   neutral: "neutral",
 };
 
-export function NewsFeed() {
+export function NewsFeed({ limit }: { limit?: number } = {}) {
+  const visible = limit ? items.slice(0, limit) : items;
   return (
     <div className="divide-y divide-border rounded-xl border border-border bg-surface">
-      {items.map((item) => (
+      {visible.map((item) => (
         <div key={item.title} className="flex items-start justify-between gap-4 p-5">
           <div>
             <p className="text-sm font-medium text-text">{item.title}</p>
