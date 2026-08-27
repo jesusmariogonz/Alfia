@@ -50,7 +50,11 @@ async function todaysApertura(): Promise<MarketBriefing | null> {
 }
 
 const SYSTEM_PROMPT =
-  "Escribes briefings cortos de mercado para Alfia, una plataforma de análisis financiero. Tono profesional, directo, sin jerga innecesaria, en español neutro. No te quedes en generalidades tipo 'el mercado tuvo movimientos mixtos' — arranca con 1-2 frases de panorama general y luego dedica al menos un párrafo a hacer zoom en el dato o activo más específico y relevante que te demos (números exactos, comparación contra lo normal para ese activo, causa probable si hay una noticia relacionada). Nunca dices 'compra' o 'vende' — describes lo que pasó y lo que es razonable esperar, dejando claro que es información educativa, no asesoría financiera regulada. Responde ÚNICAMENTE con un objeto JSON válido, sin texto extra: {\"title\": string, \"content\": string[] (3-5 párrafos cortos)}.";
+  `Escribes briefings de mercado para Alfia, una plataforma de análisis financiero, siguiendo el formato de boletines premarket reales como el "5 Things to Know" de CNBC: directo, con datos concretos, cero relleno. Estructura obligatoria del array "content":
+1. Primer elemento: una frase de apertura con el estado general (cómo van los índices/futuros, en 1 línea, no un párrafo).
+2. Elementos siguientes: una lista NUMERADA ("1. ...", "2. ...", "3. ...") de 3-4 puntos, cada uno arrancando con el dato o activo específico más relevante que te demos (símbolo, % exacto, comparación contra lo normal para ese activo) — nunca generalidades tipo "el mercado tuvo movimientos mixtos". Uno de esos puntos debe ser el zoom detallado en el dato específico que te pasamos.
+3. Último elemento: una línea de cierre con qué vigilar hacia adelante (próxima sesión, catalizador pendiente) — solo menciona catalizadores concretos si te los dimos, nunca inventes datos económicos o calendario que no se te compartieron.
+Tono profesional, directo, sin jerga innecesaria, en español neutro. Nunca dices 'compra' o 'vende' — describes lo que pasó y lo que es razonable esperar, dejando claro que es información educativa, no asesoría financiera regulada. Responde ÚNICAMENTE con un objeto JSON válido, sin texto extra: {"title": string, "content": string[]}.`;
 
 async function askClaude(userPrompt: string): Promise<{ title: string; content: string[] } | null> {
   const anthropic = getAnthropicClient();
@@ -85,7 +89,7 @@ export async function generateBriefing(
 
   if (type === "apertura") {
     const result = await askClaude(
-      `Escribe el briefing de apertura de mercado (se publica 20 minutos antes de que abra). Con esto en mente: ${reportSummary}. Sentimiento de mercado: ${report.sentiment?.label ?? "sin datos"}. Sectores líderes/rezagados: ${report.sectors.map((s) => `${s.sector} ${(s.avgDayChangePct * 100).toFixed(1)}%`).join(", ")}. ${featuredText} Da: (1) un resumen breve de cómo cerró la sesión pasada, (2) zoom detallado en el dato específico de arriba y por qué importa para hoy, (3) 2-3 ideas o proyecciones concretas de qué vigilar hoy (sectores, índices, catalizadores), dejando claro que son proyecciones educativas, no garantías.`,
+      `Escribe el briefing de apertura de mercado (se publica 20 minutos antes de que abra), con el formato numerado que se te indicó. Cómo cerró la sesión pasada: ${reportSummary}. Sentimiento de mercado: ${report.sentiment?.label ?? "sin datos"}. Sectores líderes/rezagados: ${report.sectors.map((s) => `${s.sector} ${(s.avgDayChangePct * 100).toFixed(1)}%`).join(", ")}. ${featuredText} El cierre debe ser proyecciones educativas de qué vigilar hoy (sectores, índices), dejando claro que no son garantías.`,
     );
     return result ? { ...result, refersTo: null } : null;
   }
@@ -99,7 +103,7 @@ export async function generateBriefing(
       .map((q) => `${q.symbol} ${((q.quote!.changePct) * 100).toFixed(2)}% intradía`)
       .join(", ");
     const result = await askClaude(
-      `Escribe un briefing corto a media sesión, solo porque detectamos algo relevante: ${moves}. Contexto del día: ${reportSummary}. Explica qué está pasando ahora mismo y si cambia algo respecto a lo esperado en la apertura.`,
+      `Escribe un briefing corto a media sesión, con el formato numerado que se te indicó, solo porque detectamos algo relevante: ${moves}. Contexto del día: ${reportSummary}. Explica qué está pasando ahora mismo y si cambia algo respecto a lo esperado en la apertura.`,
     );
     return result ? { ...result, refersTo: null } : null;
   }
@@ -108,7 +112,7 @@ export async function generateBriefing(
   const apertura = await todaysApertura();
   const aperturaText = apertura ? apertura.content.join(" ") : "No se generó briefing de apertura hoy.";
   const result = await askClaude(
-    `Escribe el briefing de cierre de mercado (se publica 20 minutos antes de que cierre). Esto fue lo que proyectamos en la apertura de hoy: "${aperturaText}". Esto es lo que realmente pasó: ${reportSummary}. Sectores: ${report.sectors.map((s) => `${s.sector} ${(s.avgDayChangePct * 100).toFixed(1)}%`).join(", ")}. ${featuredText} Compara explícitamente lo proyectado contra lo que ocurrió (qué se cumplió, qué no), haz zoom en el dato específico de arriba, y cierra con qué vigilar para la próxima sesión.`,
+    `Escribe el briefing de cierre de mercado (se publica 20 minutos antes de que cierre), con el formato numerado que se te indicó. Esto fue lo que proyectamos en la apertura de hoy: "${aperturaText}". Esto es lo que realmente pasó: ${reportSummary}. Sectores: ${report.sectors.map((s) => `${s.sector} ${(s.avgDayChangePct * 100).toFixed(1)}%`).join(", ")}. ${featuredText} Al menos uno de los puntos numerados debe comparar explícitamente lo proyectado contra lo que ocurrió (qué se cumplió, qué no). El cierre debe decir qué vigilar para la próxima sesión.`,
   );
   return result ? { ...result, refersTo: apertura?.id ?? null } : null;
 }

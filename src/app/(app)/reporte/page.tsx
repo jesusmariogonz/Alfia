@@ -106,11 +106,11 @@ export default async function ReportePage() {
       <section>
         <h2 className="font-display text-lg font-medium text-text">Qué pasó y qué esperar</h2>
         <div className="mt-4 rounded-xl border border-border bg-surface p-6">
-          <ul className="flex flex-col gap-2 text-sm leading-relaxed text-text-muted">
+          <ol className="flex flex-col gap-2 text-sm leading-relaxed text-text-muted">
             {report.narrative.map((line, i) => (
-              <li key={i}>· {line}</li>
+              <li key={i}>{i + 1}. {line}</li>
             ))}
-          </ul>
+          </ol>
           <Disclaimer className="mt-4" />
         </div>
       </section>

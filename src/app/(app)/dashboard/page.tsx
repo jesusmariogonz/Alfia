@@ -67,11 +67,11 @@ export default async function DashboardPage() {
           <h2 className="font-display text-lg font-medium text-text">
             Resumen del mercado
           </h2>
-          <ul className="mt-3 flex flex-col gap-1.5 text-sm leading-relaxed text-text-muted">
+          <ol className="mt-3 flex flex-col gap-1.5 text-sm leading-relaxed text-text-muted">
             {report.narrative.slice(0, 2).map((line, i) => (
-              <li key={i}>· {line}</li>
+              <li key={i}>{i + 1}. {line}</li>
             ))}
-          </ul>
+          </ol>
 
           {report.featured && (
             <div className="mt-4 rounded-lg border border-border bg-surface-2 p-4">
