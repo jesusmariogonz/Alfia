@@ -118,7 +118,7 @@ export default async function ActivoPage({
         <Disclaimer className="mt-3" />
       </div>
 
-      <div className="grid grid-cols-1 divide-y divide-border border-t border-border md:grid-cols-2 md:divide-x md:divide-y-0">
+      <div id="abrir-posicion" className="grid grid-cols-1 divide-y divide-border border-t border-border md:grid-cols-2 md:divide-x md:divide-y-0">
         {!user ? (
           <div className="py-5 md:pr-6">
             <p className="text-sm font-medium text-text">Abrir posición</p>

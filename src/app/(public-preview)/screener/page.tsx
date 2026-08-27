@@ -22,6 +22,11 @@ export default async function ScreenerPage() {
   const isFree = isFreePlan(plan);
   const universe = isFree ? UNIVERSE.slice(0, FREE_SCREENER_LIMIT) : UNIVERSE;
 
+  const { data: watchlistItems } = user
+    ? await supabase.from("watchlist_items").select("symbol").eq("user_id", user.id)
+    : { data: null };
+  const watchlistSymbols = new Set((watchlistItems ?? []).map((w) => w.symbol));
+
   const rows: ScreenerRow[] = await Promise.all(
     universe.map(async (asset) => {
       const closes = (await getCloses(asset.symbol))!;
@@ -73,7 +78,12 @@ export default async function ScreenerPage() {
       )}
 
       <div className="mt-6">
-        <ScreenerClient rows={rows} plan={plan} />
+        <ScreenerClient
+          rows={rows}
+          plan={plan}
+          loggedIn={Boolean(user)}
+          watchlistSymbols={Array.from(watchlistSymbols)}
+        />
       </div>
     </div>
   );

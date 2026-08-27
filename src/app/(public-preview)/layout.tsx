@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/dashboard/app-shell";
 import { PublicPreviewShell } from "@/components/marketing/public-preview-shell";
-import type { Profile } from "@/types/database";
 
 /**
  * Screener y ficha de activo son las únicas páginas de producto visibles
@@ -24,18 +23,8 @@ export default async function PublicPreviewLayout({
     return <PublicPreviewShell>{children}</PublicPreviewShell>;
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single<Profile>();
-
   return (
-    <AppShell
-      email={user.email ?? ""}
-      creditBalance={profile?.credit_balance ?? 0}
-      plan={profile?.plan}
-    >
+    <AppShell email={user.email ?? ""}>
       {children}
     </AppShell>
   );

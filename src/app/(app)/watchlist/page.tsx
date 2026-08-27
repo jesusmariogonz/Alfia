@@ -120,7 +120,15 @@ export default async function WatchlistPage() {
                     {row.alfiaScore}
                   </td>
                   <td className="px-5 py-3 text-right">
-                    <RemoveFromWatchlistButton symbol={row.asset.symbol} />
+                    <div className="flex items-center justify-end gap-3">
+                      <Link
+                        href={`/activos/${row.asset.symbol}#abrir-posicion`}
+                        className="text-xs font-medium text-green-bright hover:underline"
+                      >
+                        Abrir posición →
+                      </Link>
+                      <RemoveFromWatchlistButton symbol={row.asset.symbol} />
+                    </div>
                   </td>
                 </tr>
               ))}

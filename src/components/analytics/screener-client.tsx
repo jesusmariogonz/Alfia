@@ -8,7 +8,17 @@ import type { Plan } from "@/types/database";
 
 const FREE_MAX_COMPARE = 3;
 
-export function ScreenerClient({ rows, plan }: { rows: ScreenerRow[]; plan: Plan }) {
+export function ScreenerClient({
+  rows,
+  plan,
+  loggedIn,
+  watchlistSymbols,
+}: {
+  rows: ScreenerRow[];
+  plan: Plan;
+  loggedIn: boolean;
+  watchlistSymbols: string[];
+}) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const maxSelectable = isFreePlan(plan) ? FREE_MAX_COMPARE : null;
 
@@ -31,6 +41,8 @@ export function ScreenerClient({ rows, plan }: { rows: ScreenerRow[]; plan: Plan
         selected={selected}
         onToggle={toggle}
         maxSelectable={maxSelectable}
+        loggedIn={loggedIn}
+        watchlistSymbols={watchlistSymbols}
       />
       <ScreenerComparisonPanel rows={rows} selected={selected} plan={plan} />
     </div>

@@ -25,6 +25,11 @@ function pathFromPoints(points: { x: number; y: number }[]): string {
   return points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
 }
 
+function gridValues(min: number, max: number, steps = 4): number[] {
+  const range = max - min || 1;
+  return Array.from({ length: steps + 1 }, (_, i) => min + (range * i) / steps);
+}
+
 function formatDate(dateStr: string): string {
   if (dateStr.includes("T")) {
     return new Date(dateStr).toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
@@ -53,6 +58,7 @@ function useHoverIndex(width: number, padding: number, count: number) {
   return {
     svgRef,
     index,
+    setIndex,
     leftPct,
     onMouseMove: (e: React.MouseEvent) => updateFromClientX(e.clientX),
     onMouseLeave: () => setIndex(null),
@@ -89,7 +95,7 @@ export function NormalizedLineChart({
   const gradientId = useId();
   const usable = series.filter((s) => s.candles.length > 1);
   const pointCount = usable[0]?.candles.length ?? 0;
-  const { svgRef, index: hoverIndex, leftPct, ...hoverHandlers } = useHoverIndex(width, padding, pointCount);
+  const { svgRef, index: hoverIndex, setIndex, leftPct, ...hoverHandlers } = useHoverIndex(width, padding, pointCount);
 
   if (usable.length === 0) {
     return <p className="text-sm text-text-muted">No hay suficientes datos para graficar.</p>;
@@ -119,10 +125,13 @@ export function NormalizedLineChart({
 
   const referenceY = usePriceMode ? yAt(normalizedSeries[0][0]) : yAt(0);
   const isSingle = usable.length === 1;
+  const gridLines = gridValues(min, max);
+  const dateTicks = usable[0]?.candles ?? [];
 
   return (
     <div>
-      <div className="relative">
+      <div className="flex gap-2">
+      <div className="relative flex-1">
       <svg
         ref={svgRef}
         width="100%"
@@ -136,6 +145,17 @@ export function NormalizedLineChart({
         onTouchMove={hoverHandlers.onTouchMove}
         onTouchEnd={hoverHandlers.onTouchEnd}
       >
+        {gridLines.map((v, i) => (
+          <line
+            key={i}
+            x1={0}
+            x2={width}
+            y1={yAt(v)}
+            y2={yAt(v)}
+            stroke="var(--border)"
+            strokeWidth={1}
+          />
+        ))}
         {isSingle && (
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -223,6 +243,34 @@ export function NormalizedLineChart({
         </div>
       )}
       </div>
+      <div className="flex w-12 shrink-0 flex-col justify-between py-0.5 text-right font-data text-[10px] leading-none text-text-muted">
+        {[...gridLines].reverse().map((v, i) => (
+          <span key={i}>
+            {usePriceMode ? `$${v.toLocaleString("es", { maximumFractionDigits: 0 })}` : `${v >= 0 ? "+" : ""}${v.toFixed(1)}%`}
+          </span>
+        ))}
+      </div>
+      </div>
+
+      {dateTicks.length > 1 && (
+        <div className="mt-1.5 flex justify-between text-[10px] text-text-muted">
+          <span>{formatDate(dateTicks[0].date)}</span>
+          <span>{formatDate(dateTicks[Math.floor(dateTicks.length / 2)].date)}</span>
+          <span>{formatDate(dateTicks[dateTicks.length - 1].date)}</span>
+        </div>
+      )}
+
+      {pointCount > 1 && (
+        <input
+          type="range"
+          min={0}
+          max={pointCount - 1}
+          value={hoverIndex ?? pointCount - 1}
+          onChange={(e) => setIndex(Number(e.target.value))}
+          aria-label="Mover el tiempo manualmente"
+          className="mt-2 w-full accent-green-bright"
+        />
+      )}
 
       <div className="mt-3 flex flex-wrap gap-4">
         {usable.map((s, i) => (
@@ -251,7 +299,7 @@ export function CandlestickChart({
 }) {
   const width = 800;
   const padding = 8;
-  const { svgRef, index: hoverIndex, leftPct, ...hoverHandlers } = useHoverIndex(width, padding, candles.length);
+  const { svgRef, index: hoverIndex, setIndex, leftPct, ...hoverHandlers } = useHoverIndex(width, padding, candles.length);
 
   if (candles.length < 2) {
     return <p className="text-sm text-text-muted">No hay suficientes datos para graficar.</p>;
@@ -278,10 +326,12 @@ export function CandlestickChart({
     );
 
   const hovered = hoverIndex !== null ? candles[hoverIndex] : null;
+  const gridLines = gridValues(min, max);
 
   return (
     <div>
-      <div className="relative">
+      <div className="flex gap-2">
+      <div className="relative flex-1">
       <svg
         ref={svgRef}
         width="100%"
@@ -295,6 +345,9 @@ export function CandlestickChart({
         onTouchMove={hoverHandlers.onTouchMove}
         onTouchEnd={hoverHandlers.onTouchEnd}
       >
+        {gridLines.map((v, i) => (
+          <line key={i} x1={0} x2={width} y1={y(v)} y2={y(v)} stroke="var(--border)" strokeWidth={1} />
+        ))}
         {candles.map((c, i) => {
           const cx = xCenter(i);
           const up = c.close >= c.open;
@@ -346,6 +399,32 @@ export function CandlestickChart({
         </div>
       )}
       </div>
+      <div className="flex w-14 shrink-0 flex-col justify-between py-0.5 text-right font-data text-[10px] leading-none text-text-muted">
+        {[...gridLines].reverse().map((v, i) => (
+          <span key={i}>${v.toLocaleString("es", { maximumFractionDigits: 0 })}</span>
+        ))}
+      </div>
+      </div>
+
+      {candles.length > 1 && (
+        <div className="mt-1.5 flex justify-between text-[10px] text-text-muted">
+          <span>{formatDate(candles[0].date)}</span>
+          <span>{formatDate(candles[Math.floor(candles.length / 2)].date)}</span>
+          <span>{formatDate(candles[candles.length - 1].date)}</span>
+        </div>
+      )}
+
+      {candles.length > 1 && (
+        <input
+          type="range"
+          min={0}
+          max={candles.length - 1}
+          value={hoverIndex ?? candles.length - 1}
+          onChange={(e) => setIndex(Number(e.target.value))}
+          aria-label="Mover el tiempo manualmente"
+          className="mt-2 w-full accent-green-bright"
+        />
+      )}
     </div>
   );
 }

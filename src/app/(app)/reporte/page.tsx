@@ -49,6 +49,14 @@ export default async function ReportePage() {
     year: "numeric",
   }).format(new Date());
 
+  const lastBriefing = briefings && briefings.length > 0 ? briefings[briefings.length - 1] : null;
+  const lastUpdatedIso = deepReportRow?.created_at ?? lastBriefing?.created_at ?? null;
+  const lastUpdatedLabel = lastUpdatedIso
+    ? new Intl.DateTimeFormat("es", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(
+        new Date(lastUpdatedIso),
+      )
+    : null;
+
   return (
     <div className="flex flex-col gap-8">
       <div>
@@ -59,6 +67,12 @@ export default async function ReportePage() {
           {deep
             ? deep.hook
             : "Cierre del mercado, amplitud, sectores y sentimiento — generado con datos reales de precios. El análisis a fondo del día todavía no se ha generado."}
+        </p>
+        <p className="mt-2 text-xs text-text-muted">
+          {lastUpdatedLabel
+            ? `Última actualización: ${lastUpdatedLabel}`
+            : "Todavía no se ha generado contenido para hoy — se actualiza automáticamente en apertura, media sesión y cierre."}
+          {" "}· Índices y sectores se recalculan en cada visita con el último precio disponible.
         </p>
       </div>
 

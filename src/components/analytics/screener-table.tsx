@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Sparkline } from "@/components/analytics/sparkline";
 import { InfoModal } from "@/components/ui/info-modal";
+import { WatchlistStarButton } from "@/components/analytics/watchlist-star-button";
 import type { AssetClass, Candle } from "@/lib/market-data";
 
 export type ScreenerRow = {
@@ -58,12 +59,17 @@ export function ScreenerTable({
   selected,
   onToggle,
   maxSelectable,
+  loggedIn,
+  watchlistSymbols,
 }: {
   rows: ScreenerRow[];
   selected: Set<string>;
   onToggle: (symbol: string) => void;
   maxSelectable: number | null;
+  loggedIn: boolean;
+  watchlistSymbols: string[];
 }) {
+  const watchlistSet = new Set(watchlistSymbols);
   const [query, setQuery] = useState("");
   const [assetClass, setAssetClass] = useState<AssetClass | "todas">("todas");
   const [minReturn, setMinReturn] = useState<number>(-100);
@@ -146,7 +152,15 @@ export function ScreenerTable({
           <thead>
             <tr className="border-b border-border text-text-muted">
               <th className="px-3 py-3 font-medium sm:px-5">
-                <span className="hidden sm:inline">Comparar</span>
+                <span className="inline-flex items-center gap-1.5">
+                  Comparar
+                  <InfoModal title="¿Qué hace esta casilla?">
+                    Selecciona hasta {maxSelectable ?? "varios"} activos para
+                    graficarlos juntos abajo. Esto no los agrega a tu
+                    watchlist — para eso usa el botón &ldquo;Watchlist&rdquo;
+                    de cada fila, o entra al activo para abrir una posición.
+                  </InfoModal>
+                </span>
                 {maxSelectable !== null && (
                   <span className="ml-1 font-normal text-text-muted/70">(máx. {maxSelectable})</span>
                 )}
@@ -181,6 +195,7 @@ export function ScreenerTable({
                   </InfoModal>
                 </span>
               </th>
+              <th className="px-3 py-3 font-medium sm:px-5"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -236,11 +251,27 @@ export function ScreenerTable({
                 <td className={`px-3 py-3 text-right text-xs font-medium sm:px-5 ${signalTone(screenerSignal(row))}`}>
                   {screenerSignal(row)}
                 </td>
+                <td className="px-3 py-3 sm:px-5">
+                  <div className="flex flex-col items-start gap-1.5">
+                    {loggedIn && (
+                      <WatchlistStarButton
+                        symbol={row.symbol}
+                        initialInWatchlist={watchlistSet.has(row.symbol)}
+                      />
+                    )}
+                    <Link
+                      href={`/activos/${row.symbol}#abrir-posicion`}
+                      className="text-xs font-medium text-green-bright hover:underline"
+                    >
+                      Abrir posición →
+                    </Link>
+                  </div>
+                </td>
               </tr>
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-5 py-8 text-center text-text-muted">
+                <td colSpan={10} className="px-5 py-8 text-center text-text-muted">
                   Ningún activo cumple estos filtros. Prueba ampliarlos.
                 </td>
               </tr>

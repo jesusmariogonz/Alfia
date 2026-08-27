@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ChatPanel } from "@/components/dashboard/chat-panel";
+import { CreditChip } from "@/components/dashboard/credit-chip";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { canUseChat } from "@/lib/plan";
@@ -39,12 +40,17 @@ export default async function ChatPage() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-semibold text-text">
-        Chat de inversión
-      </h1>
-      <p className="mt-1 text-sm text-text-muted">
-        Responde solo preguntas de inversión, trading y finanzas.
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-2xl font-semibold text-text">
+            Chat de inversión
+          </h1>
+          <p className="mt-1 text-sm text-text-muted">
+            Responde solo preguntas de inversión, trading y finanzas.
+          </p>
+        </div>
+        <CreditChip balance={profile?.credit_balance ?? 0} />
+      </div>
       <div className="mt-6">
         <ChatPanel initialBalance={profile?.credit_balance ?? 0} />
       </div>

@@ -80,9 +80,14 @@ export default async function DashboardPage() {
           />
 
           <div className="p-6">
-            <h2 className="font-display text-lg font-medium text-text">
-              Resumen del mercado
-            </h2>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="font-display text-lg font-medium text-text">
+                Resumen del mercado
+              </h2>
+              <p className="text-xs text-text-muted">
+                Actualizado: {new Date().toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" })}
+              </p>
+            </div>
             <ol className="mt-3 flex flex-col gap-1.5 text-sm leading-relaxed text-text-muted">
               {report.narrative.slice(0, 2).map((line, i) => (
                 <li key={i}>{i + 1}. {line}</li>
