@@ -138,10 +138,9 @@ export function AssetChartPanel({
               <button
                 type="button"
                 onClick={() => setSettingsOpen((v) => !v)}
-                aria-label="Configuración del gráfico"
-                className="flex h-7 w-7 items-center justify-center rounded-lg border border-border text-text-muted transition-colors hover:text-text"
+                className="rounded-lg border border-border px-2.5 py-1 text-xs font-medium text-text-muted transition-colors hover:text-text"
               >
-                ⚙
+                Ajustes
               </button>
               {settingsOpen && (
                 <div className="absolute right-0 z-10 mt-2 w-56 rounded-lg border border-border bg-surface p-4 shadow-lg">

@@ -37,10 +37,9 @@ export function InfoModal({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                aria-label="Cerrar"
-                className="shrink-0 text-text-muted hover:text-text"
+                className="shrink-0 text-xs font-medium text-text-muted hover:text-text"
               >
-                ✕
+                Cerrar
               </button>
             </div>
             <div className="mt-3 text-sm leading-relaxed text-text-muted">{children}</div>

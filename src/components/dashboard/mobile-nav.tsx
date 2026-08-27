@@ -19,10 +19,10 @@ export function MobileNav() {
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? "Cerrar menú" : "Abrir menú"}
           aria-expanded={open}
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-text"
+          className={`flex h-9 items-center justify-center rounded-lg border border-border px-3 text-text ${open ? "" : "w-9"}`}
         >
           {open ? (
-            <span aria-hidden className="text-lg leading-none">✕</span>
+            <span aria-hidden className="text-xs font-medium leading-none">Cerrar</span>
           ) : (
             <span aria-hidden className="flex flex-col gap-1">
               <span className="block h-0.5 w-5 bg-text" />

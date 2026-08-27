@@ -26,7 +26,7 @@ export function Hero() {
       <div className="mx-auto grid max-w-6xl gap-10 px-6 pb-20 pt-16 md:grid-cols-[1.1fr_0.9fr] md:items-center md:pb-28 md:pt-24">
         <div className="text-center md:text-left">
           <LogoMark size={56} className="mx-auto mb-6 md:mx-0" />
-          <Badge tone="green">✦ Contenido diario generado por IA</Badge>
+          <Badge tone="green">Contenido diario generado por IA</Badge>
           <h1 className="mt-6 text-balance font-display text-4xl font-semibold leading-[1.05] tracking-tight text-text md:text-6xl">
             Lee el mercado{" "}
             <span className="bg-gradient-to-r from-green-bright to-[#7ee6ac] bg-clip-text text-transparent">

@@ -64,60 +64,59 @@ export default async function DashboardPage() {
   const bearishCount = todaysVotes?.filter((v) => v.vote === "bearish").length ?? 0;
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-10">
       <section>
         <h1 className="font-display text-2xl font-semibold capitalize text-text">
           {today}
         </h1>
-        {sentiment && (
-          <div className="mt-4">
-            <MarketSentimentBanner sentiment={sentiment} />
-          </div>
-        )}
-        <div className="mt-4">
+
+        <div className="mt-5 divide-y divide-border rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)]">
+          {sentiment && <MarketSentimentBanner sentiment={sentiment} />}
+
           <BullishBearishPoll
             initialVote={myVote}
             initialBullish={bullishCount}
             initialBearish={bearishCount}
           />
-        </div>
-        <div className="mt-4 rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-6">
-          <h2 className="font-display text-lg font-medium text-text">
-            Resumen del mercado
-          </h2>
-          <ol className="mt-3 flex flex-col gap-1.5 text-sm leading-relaxed text-text-muted">
-            {report.narrative.slice(0, 2).map((line, i) => (
-              <li key={i}>{i + 1}. {line}</li>
-            ))}
-          </ol>
 
-          {report.featured && (
-            <div className="mt-4 rounded-lg border border-border bg-surface-2 p-4">
-              <p className="text-xs font-medium uppercase tracking-wide text-gold">
-                En detalle: {report.featured.symbol}
-              </p>
-              <div className="mt-2 flex flex-col gap-1.5">
-                {report.featured.detail.map((line, i) => (
-                  <p key={i} className="text-sm leading-relaxed text-text">
-                    {line}
-                  </p>
-                ))}
+          <div className="p-6">
+            <h2 className="font-display text-lg font-medium text-text">
+              Resumen del mercado
+            </h2>
+            <ol className="mt-3 flex flex-col gap-1.5 text-sm leading-relaxed text-text-muted">
+              {report.narrative.slice(0, 2).map((line, i) => (
+                <li key={i}>{i + 1}. {line}</li>
+              ))}
+            </ol>
+
+            {report.featured && (
+              <div className="mt-4 border-t border-border pt-4">
+                <p className="text-xs font-medium uppercase tracking-wide text-gold">
+                  En detalle: {report.featured.symbol}
+                </p>
+                <div className="mt-2 flex flex-col gap-1.5">
+                  {report.featured.detail.map((line, i) => (
+                    <p key={i} className="text-sm leading-relaxed text-text">
+                      {line}
+                    </p>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <Link
-            href="/reporte"
-            className="mt-4 inline-block text-sm font-medium text-green-bright hover:underline"
-          >
-            Ver reporte completo →
-          </Link>
-          <Disclaimer className="mt-4" />
+            <Link
+              href="/reporte"
+              className="mt-4 inline-block text-sm font-medium text-green-bright hover:underline"
+            >
+              Ver reporte completo →
+            </Link>
+            <Disclaimer className="mt-4" />
+          </div>
         </div>
       </section>
 
       {isFree && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gold/30 bg-gold/10 px-5 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-y border-gold/30 bg-gold/5 px-1 py-4">
           <p className="text-sm text-text">
             <Badge tone="gold">Free</Badge>{" "}
             <span className="ml-2">
@@ -133,15 +132,15 @@ export default async function DashboardPage() {
 
       <section>
         <h2 className="font-display text-lg font-medium text-text">Analíticos</h2>
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 divide-y divide-border border-y border-border">
           {quickLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-2xl border border-border bg-surface shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_10px_30px_-14px_rgba(0,0,0,0.55)] p-5 transition-colors hover:border-green-bright/40"
+              className="flex items-baseline justify-between gap-4 py-4 transition-colors hover:bg-surface-2"
             >
               <p className="font-display font-medium text-text">{link.label}</p>
-              <p className="mt-1.5 text-xs text-text-muted">{link.description}</p>
+              <p className="text-right text-xs text-text-muted">{link.description}</p>
             </Link>
           ))}
         </div>
