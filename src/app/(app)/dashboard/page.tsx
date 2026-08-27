@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { NewsFeed } from "@/components/dashboard/news-feed";
+import { MarketSentimentBanner } from "@/components/dashboard/market-sentiment-banner";
 import { Disclaimer } from "@/components/ui/disclaimer";
 import { Badge } from "@/components/ui/badge";
 import { isFreePlan, canUseChat } from "@/lib/plan";
+import { computeMarketSentiment } from "@/lib/analytics/sentiment";
 import type { Profile } from "@/types/database";
 
 type QuickLink = {
@@ -47,12 +49,19 @@ export default async function DashboardPage() {
     month: "long",
   }).format(new Date());
 
+  const sentiment = await computeMarketSentiment();
+
   return (
     <div className="flex flex-col gap-8">
       <section>
         <h1 className="font-display text-2xl font-semibold capitalize text-text">
           {today}
         </h1>
+        {sentiment && (
+          <div className="mt-4">
+            <MarketSentimentBanner sentiment={sentiment} />
+          </div>
+        )}
         <div className="mt-4 rounded-xl border border-border bg-surface p-6">
           <h2 className="font-display text-lg font-medium text-text">
             Resumen del mercado

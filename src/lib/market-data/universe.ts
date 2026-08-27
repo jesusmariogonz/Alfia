@@ -34,6 +34,8 @@ export const UNIVERSE: UniverseAsset[] = [
   { symbol: "QQQ", name: "Invesco QQQ Trust", sector: "Índice", assetClass: "etf", basePrice: 481.60, annualDrift: 0.13, annualVolatility: 0.22 },
   { symbol: "BTC", name: "Bitcoin", sector: "Cripto", assetClass: "cripto", basePrice: 61204, annualDrift: 0.20, annualVolatility: 0.65 },
   { symbol: "ETH", name: "Ethereum", sector: "Cripto", assetClass: "cripto", basePrice: 3012, annualDrift: 0.18, annualVolatility: 0.75 },
+  { symbol: "GLD", name: "SPDR Gold Shares", sector: "Refugio (oro)", assetClass: "etf", basePrice: 245.80, annualDrift: 0.09, annualVolatility: 0.14 },
+  { symbol: "USO", name: "United States Oil Fund", sector: "Energía (petróleo)", assetClass: "etf", basePrice: 74.30, annualDrift: 0.03, annualVolatility: 0.34 },
 ];
 
 export function findAsset(symbol: string): UniverseAsset | undefined {
