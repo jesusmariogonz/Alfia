@@ -74,6 +74,8 @@ export function ScreenerTable({
   const [assetClass, setAssetClass] = useState<AssetClass | "todas">("todas");
   const [minReturn, setMinReturn] = useState<number>(-100);
   const [maxVolatility, setMaxVolatility] = useState<number>(100);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -90,6 +92,10 @@ export function ScreenerTable({
       .sort((a, b) => b.sharpeRatio - a.sharpeRatio);
   }, [rows, query, assetClass, minReturn, maxVolatility]);
 
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const pageRows = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
   return (
     <div>
       <div className="flex flex-wrap items-end gap-4 border-b border-border pb-5">
@@ -98,7 +104,10 @@ export function ScreenerTable({
           <input
             type="text"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setPage(1);
+            }}
             placeholder="Símbolo o nombre…"
             className="w-40 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-text placeholder:text-text-muted focus:border-green-bright focus:outline-none"
           />
@@ -199,7 +208,7 @@ export function ScreenerTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {filtered.map((row) => (
+            {pageRows.map((row) => (
               <tr key={row.symbol} className="hover:bg-surface-2">
                 <td className="px-3 py-3 sm:px-5">
                   <input
@@ -279,6 +288,26 @@ export function ScreenerTable({
           </tbody>
         </table>
       </div>
+
+      {pageCount > 1 && (
+        <nav aria-label="Paginación del screener" className="mt-6 flex items-center justify-center gap-2">
+          {Array.from({ length: pageCount }, (_, i) => i + 1).map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => setPage(n)}
+              aria-current={n === currentPage ? "page" : undefined}
+              className={`flex h-9 w-9 items-center justify-center rounded-lg border text-sm font-medium transition-colors ${
+                n === currentPage
+                  ? "border-green-bright bg-green-bright text-bg"
+                  : "border-border text-text-muted hover:bg-surface-2 hover:text-text"
+              }`}
+            >
+              {n}
+            </button>
+          ))}
+        </nav>
+      )}
     </div>
   );
 }

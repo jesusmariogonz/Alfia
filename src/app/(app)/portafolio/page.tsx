@@ -9,13 +9,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Disclaimer } from "@/components/ui/disclaimer";
 import { CorrelationMatrix } from "@/components/portfolio/correlation-matrix";
-import type { WatchlistItem } from "@/types/database";
+import type { WatchlistItem, Profile } from "@/types/database";
 
 export default async function PortafolioPage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user!.id)
+    .single<Profile>();
+  const preferMxn = profile?.currency_pref === "mxn";
 
   const { data: items } = await supabase
     .from("watchlist_items")
@@ -87,10 +94,14 @@ export default async function PortafolioPage() {
         <div className="rounded-xl border border-gold/30 bg-gold/10 px-5 py-3">
           <p className="text-xs text-text-muted">Valor total</p>
           <p className="font-data text-xl font-semibold text-gold">
-            ${totalUsd.toLocaleString("es", { maximumFractionDigits: 0 })} USD
+            {preferMxn
+              ? `$${usdToMxn(totalUsd).toLocaleString("es", { maximumFractionDigits: 0 })} MXN`
+              : `$${totalUsd.toLocaleString("es", { maximumFractionDigits: 0 })} USD`}
           </p>
           <p className="font-data text-xs text-text-muted">
-            ${usdToMxn(totalUsd).toLocaleString("es", { maximumFractionDigits: 0 })} MXN
+            {preferMxn
+              ? `$${totalUsd.toLocaleString("es", { maximumFractionDigits: 0 })} USD`
+              : `$${usdToMxn(totalUsd).toLocaleString("es", { maximumFractionDigits: 0 })} MXN`}
           </p>
         </div>
       </div>
@@ -125,9 +136,13 @@ export default async function PortafolioPage() {
                   </span>
                 </td>
                 <td className="px-5 py-3 text-right font-data text-text">
-                  ${row.investedUsd.toLocaleString("es", { maximumFractionDigits: 0 })}
+                  {preferMxn
+                    ? `$${usdToMxn(row.investedUsd).toLocaleString("es", { maximumFractionDigits: 0 })}`
+                    : `$${row.investedUsd.toLocaleString("es", { maximumFractionDigits: 0 })}`}
                   <span className="ml-1 text-xs text-text-muted">
-                    (${usdToMxn(row.investedUsd).toLocaleString("es", { maximumFractionDigits: 0 })} MXN)
+                    ({preferMxn
+                      ? `$${row.investedUsd.toLocaleString("es", { maximumFractionDigits: 0 })} USD`
+                      : `$${usdToMxn(row.investedUsd).toLocaleString("es", { maximumFractionDigits: 0 })} MXN`})
                   </span>
                 </td>
                 <td className="px-5 py-3 text-right font-data text-text">

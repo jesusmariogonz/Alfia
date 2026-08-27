@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
   for (let iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration++) {
     const completion = await anthropic.messages.create({
       model,
-      max_tokens: 800,
+      max_tokens: 1600,
       system: SYSTEM_PROMPT,
       tools: CHAT_TOOLS,
       messages,

@@ -5,6 +5,7 @@ import { computeRiskMetrics } from "@/lib/analytics/metrics";
 import { computeAlfiaScore } from "@/lib/analytics/score";
 import { Sparkline } from "@/components/analytics/sparkline";
 import { RemoveFromWatchlistButton } from "@/components/analytics/remove-from-watchlist-button";
+import { WatchlistAlertSetting } from "@/components/analytics/watchlist-alert-setting";
 import { Button } from "@/components/ui/button";
 import type { WatchlistItem } from "@/types/database";
 
@@ -43,13 +44,22 @@ export default async function WatchlistPage() {
         const last = closes[closes.length - 1];
         const prev = closes[closes.length - 2].close;
         const metrics = computeRiskMetrics(closes);
+        const triggered = Boolean(
+          item.alert_threshold_pct &&
+            item.alert_reference_price &&
+            Math.abs(last.close / item.alert_reference_price - 1) * 100 >= item.alert_threshold_pct,
+        );
         return {
           asset,
           price: last.close,
+          open: last.open,
+          prevClose: prev,
           changePct: last.close / prev - 1,
           volume: last.volume,
           alfiaScore: computeAlfiaScore(metrics),
           closes,
+          alertThresholdPct: item.alert_threshold_pct,
+          alertTriggered: triggered,
         };
       }),
     )
@@ -82,10 +92,13 @@ export default async function WatchlistPage() {
               <tr className="border-b border-border text-text-muted">
                 <th className="px-5 py-3 font-medium">Activo</th>
                 <th className="px-5 py-3 font-medium text-right">Precio</th>
+                <th className="hidden px-5 py-3 font-medium text-right sm:table-cell">Apertura</th>
+                <th className="hidden px-5 py-3 font-medium text-right sm:table-cell">Cierre anterior</th>
                 <th className="px-5 py-3 font-medium text-right">Cambio</th>
-                <th className="px-5 py-3 font-medium text-right">Volumen</th>
-                <th className="px-5 py-3 font-medium">Tendencia</th>
+                <th className="hidden px-5 py-3 font-medium text-right md:table-cell">Volumen</th>
+                <th className="hidden px-5 py-3 font-medium md:table-cell">Tendencia</th>
                 <th className="px-5 py-3 font-medium text-right">Alfia Score</th>
+                <th className="px-5 py-3 font-medium">Alerta</th>
                 <th className="px-5 py-3 font-medium text-right"></th>
               </tr>
             </thead>
@@ -101,16 +114,22 @@ export default async function WatchlistPage() {
                   <td className="px-5 py-3 text-right font-data text-text">
                     ${row.price.toLocaleString("es")}
                   </td>
+                  <td className="hidden px-5 py-3 text-right font-data text-text-muted sm:table-cell">
+                    ${row.open.toLocaleString("es")}
+                  </td>
+                  <td className="hidden px-5 py-3 text-right font-data text-text-muted sm:table-cell">
+                    ${row.prevClose.toLocaleString("es")}
+                  </td>
                   <td
                     className={`px-5 py-3 text-right font-data ${row.changePct >= 0 ? "text-data-up" : "text-data-down"}`}
                   >
                     {row.changePct >= 0 ? "+" : ""}
                     {(row.changePct * 100).toFixed(2)}%
                   </td>
-                  <td className="px-5 py-3 text-right font-data text-text-muted">
+                  <td className="hidden px-5 py-3 text-right font-data text-text-muted md:table-cell">
                     {fmtVolume(row.volume)}
                   </td>
-                  <td className="w-32 px-5 py-3">
+                  <td className="hidden w-32 px-5 py-3 md:table-cell">
                     <Sparkline
                       values={row.closes.slice(-60).map((c) => c.close)}
                       up={row.changePct >= 0}
@@ -118,6 +137,13 @@ export default async function WatchlistPage() {
                   </td>
                   <td className={`px-5 py-3 text-right font-data font-semibold ${scoreTone(row.alfiaScore)}`}>
                     {row.alfiaScore}
+                  </td>
+                  <td className="px-5 py-3">
+                    <WatchlistAlertSetting
+                      symbol={row.asset.symbol}
+                      initialThresholdPct={row.alertThresholdPct}
+                      triggered={row.alertTriggered}
+                    />
                   </td>
                   <td className="px-5 py-3 text-right">
                     <div className="flex items-center justify-end gap-3">

@@ -58,7 +58,7 @@ export async function NewsFeed({ limit, hero = false }: { limit?: number; hero?:
             <img
               src={featured.image_url}
               alt=""
-              className="mb-3 aspect-video w-full rounded-xl object-cover"
+              className="mb-3 max-h-[280px] w-full rounded-xl object-cover sm:aspect-video sm:max-h-[340px]"
             />
           )}
           <div className="flex items-start justify-between gap-4">

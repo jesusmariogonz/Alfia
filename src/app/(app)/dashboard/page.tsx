@@ -73,12 +73,6 @@ export default async function DashboardPage() {
         <div className="mt-5 divide-y divide-border">
           {sentiment && <MarketSentimentBanner sentiment={sentiment} />}
 
-          <BullishBearishPoll
-            initialVote={myVote}
-            initialBullish={bullishCount}
-            initialBearish={bearishCount}
-          />
-
           <div className="p-6">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="font-display text-lg font-medium text-text">
@@ -158,6 +152,14 @@ export default async function DashboardPage() {
         <div className="mt-4">
           <NewsFeed limit={isFree ? 1 : undefined} hero />
         </div>
+      </section>
+
+      <section>
+        <BullishBearishPoll
+          initialVote={myVote}
+          initialBullish={bullishCount}
+          initialBearish={bearishCount}
+        />
       </section>
     </div>
   );

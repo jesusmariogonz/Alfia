@@ -16,6 +16,8 @@ export type QueryType =
   | "backtest"
   | "recomendacion";
 
+export type Currency = "usd" | "mxn";
+
 export type Profile = {
   id: string;
   email: string;
@@ -23,6 +25,7 @@ export type Profile = {
   credit_balance: number;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
+  currency_pref: Currency;
   created_at: string;
   updated_at: string;
 };
@@ -32,6 +35,24 @@ export type WatchlistItem = {
   user_id: string;
   symbol: string;
   invested_usd: number | null;
+  alert_threshold_pct: number | null;
+  alert_reference_price: number | null;
+  alert_last_triggered_at: string | null;
+  created_at: string;
+};
+
+export type DemoPosition = {
+  id: string;
+  user_id: string;
+  symbol: string;
+  shares: number;
+  entry_price: number;
+  demo_amount_usd: number;
+  stop_loss_price: number | null;
+  take_profit_price: number | null;
+  status: "abierta" | "cerrada";
+  closed_at: string | null;
+  closed_price: number | null;
   created_at: string;
 };
 

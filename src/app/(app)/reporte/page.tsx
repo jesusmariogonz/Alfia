@@ -1,6 +1,8 @@
 import { computeDailyReport } from "@/lib/analytics/daily-report";
 import { MarketSentimentBanner } from "@/components/dashboard/market-sentiment-banner";
 import { Disclaimer } from "@/components/ui/disclaimer";
+import { UpdatedAt } from "@/components/dashboard/updated-at";
+import { SectorAssetsList } from "@/components/dashboard/sector-assets-list";
 import { createClient } from "@/lib/supabase/server";
 import type { MarketBriefing, DailyDeepReport } from "@/types/database";
 
@@ -51,11 +53,6 @@ export default async function ReportePage() {
 
   const lastBriefing = briefings && briefings.length > 0 ? briefings[briefings.length - 1] : null;
   const lastUpdatedIso = deepReportRow?.created_at ?? lastBriefing?.created_at ?? null;
-  const lastUpdatedLabel = lastUpdatedIso
-    ? new Intl.DateTimeFormat("es", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(
-        new Date(lastUpdatedIso),
-      )
-    : null;
 
   return (
     <div className="flex flex-col gap-8">
@@ -68,12 +65,9 @@ export default async function ReportePage() {
             ? deep.hook
             : "Cierre del mercado, amplitud, sectores y sentimiento — generado con datos reales de precios. El análisis a fondo del día todavía no se ha generado."}
         </p>
-        <p className="mt-2 text-xs text-text-muted">
-          {lastUpdatedLabel
-            ? `Última actualización: ${lastUpdatedLabel}`
-            : "Todavía no se ha generado contenido para hoy — se actualiza automáticamente en apertura, media sesión y cierre."}
-          {" "}· Índices y sectores se recalculan en cada visita con el último precio disponible.
-        </p>
+        <div className="mt-2">
+          <UpdatedAt iso={lastUpdatedIso} />
+        </div>
       </div>
 
       {report.sentiment && <MarketSentimentBanner sentiment={report.sentiment} />}
@@ -196,28 +190,10 @@ export default async function ReportePage() {
         {deep?.sectorTake && (
           <p className="mt-3 text-sm leading-relaxed text-text-muted">{deep.sectorTake}</p>
         )}
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[420px] text-left text-sm">
-            <thead>
-              <tr className="border-b border-border text-text-muted">
-                <th className="px-5 py-3 font-medium">Sector</th>
-                <th className="px-5 py-3 font-medium text-right">Retorno promedio (día)</th>
-                <th className="px-5 py-3 font-medium text-right">Activos</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {report.sectors.map((s) => (
-                <tr key={s.sector}>
-                  <td className="px-5 py-3 text-text">{s.sector}</td>
-                  <td className={`px-5 py-3 text-right font-data ${tone(s.avgDayChangePct)}`}>
-                    {pct(s.avgDayChangePct, 2)}
-                  </td>
-                  <td className="px-5 py-3 text-right text-text-muted">{s.assetCount}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <p className="mt-1 text-xs text-text-muted">
+          Toca un sector para ver qué activos lo componen y cómo les fue hoy.
+        </p>
+        <SectorAssetsList sectors={report.sectors} />
       </section>
 
       <section className="grid grid-cols-1 gap-6 md:grid-cols-2">

@@ -32,6 +32,7 @@ export type SectorSnapshot = {
   sector: string;
   avgDayChangePct: number;
   assetCount: number;
+  assets: { symbol: string; name: string; dayChangePct: number }[];
 };
 
 export type FeaturedStory = {
@@ -146,17 +147,18 @@ export async function computeDailyReport(): Promise<DailyReport> {
     .filter((r): r is { asset: (typeof UNIVERSE)[number]; closes: Candle[] } => Boolean(r.closes))
     .map((r) => ({ ...r, dayChangePct: dayReturn(r.closes) }));
 
-  const sectorMap = new Map<string, number[]>();
+  const sectorMap = new Map<string, { symbol: string; name: string; dayChangePct: number }[]>();
   for (const r of withReturns) {
     const list = sectorMap.get(r.asset.sector) ?? [];
-    list.push(r.dayChangePct);
+    list.push({ symbol: r.asset.symbol, name: r.asset.name, dayChangePct: r.dayChangePct });
     sectorMap.set(r.asset.sector, list);
   }
   const sectors: SectorSnapshot[] = Array.from(sectorMap.entries())
-    .map(([sector, changes]) => ({
+    .map(([sector, assets]) => ({
       sector,
-      avgDayChangePct: changes.reduce((a, b) => a + b, 0) / changes.length,
-      assetCount: changes.length,
+      avgDayChangePct: assets.reduce((a, b) => a + b.dayChangePct, 0) / assets.length,
+      assetCount: assets.length,
+      assets: [...assets].sort((a, b) => b.dayChangePct - a.dayChangePct),
     }))
     .sort((a, b) => b.avgDayChangePct - a.avgDayChangePct);
 

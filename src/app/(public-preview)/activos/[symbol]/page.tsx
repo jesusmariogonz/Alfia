@@ -9,6 +9,7 @@ import { QuoteStats } from "@/components/analytics/quote-stats";
 import { PositionSizeCalculator } from "@/components/analytics/position-size-calculator";
 import { RiskMetricsGrid } from "@/components/analytics/risk-metrics-grid";
 import { WatchlistToggleButton } from "@/components/analytics/watchlist-toggle-button";
+import { AssetNews } from "@/components/analytics/asset-news";
 import { PositionForm } from "@/components/portfolio/position-form";
 import { PositionLocked } from "@/components/portfolio/position-locked";
 import { canOpenPositions, canUseChat } from "@/lib/plan";
@@ -106,7 +107,22 @@ export default async function ActivoPage({
 
       <QuoteStats closes={closes} />
 
-      <PositionSizeCalculator currentPrice={last} />
+      {watchlistItem?.invested_usd ? (
+        <PositionSizeCalculator currentPrice={last} />
+      ) : (
+        <div className="p-5">
+          <p className="text-sm text-text-muted">
+            La calculadora de tamaño de posición aparece aquí una vez que
+            abras una posición real en {asset.symbol}. ¿Quieres practicar
+            antes?{" "}
+            <Link href="/cartera-demo" className="text-green-bright hover:underline">
+              Prueba la cartera demo →
+            </Link>
+          </p>
+        </div>
+      )}
+
+      <AssetNews symbol={asset.symbol} name={asset.name} />
 
       <div>
         <h2 className="font-display text-lg font-medium text-text">

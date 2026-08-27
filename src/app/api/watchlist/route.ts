@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { findAsset } from "@/lib/market-data";
+import { findAsset, getQuote } from "@/lib/market-data";
 import { canOpenPositions } from "@/lib/plan";
 import type { Profile } from "@/types/database";
 
@@ -47,19 +47,34 @@ export async function PATCH(request: NextRequest) {
   const body = await request.json().catch(() => null);
   const symbol: string | undefined = body?.symbol;
   const investedUsd = body?.investedUsd;
+  const alertThresholdPct = body?.alertThresholdPct;
   const asset = symbol ? findAsset(symbol) : undefined;
 
   if (!asset) {
     return NextResponse.json({ error: "Activo no encontrado." }, { status: 404 });
   }
-  if (investedUsd !== null && (typeof investedUsd !== "number" || investedUsd < 0)) {
+  if (
+    investedUsd !== undefined &&
+    investedUsd !== null &&
+    (typeof investedUsd !== "number" || investedUsd < 0)
+  ) {
     return NextResponse.json(
       { error: "El monto invertido debe ser un número positivo." },
       { status: 400 },
     );
   }
+  if (
+    alertThresholdPct !== undefined &&
+    alertThresholdPct !== null &&
+    (typeof alertThresholdPct !== "number" || alertThresholdPct <= 0)
+  ) {
+    return NextResponse.json(
+      { error: "El umbral de alerta debe ser un número positivo." },
+      { status: 400 },
+    );
+  }
 
-  if (investedUsd !== null) {
+  if (investedUsd !== undefined && investedUsd !== null) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("*")
@@ -74,15 +89,25 @@ export async function PATCH(request: NextRequest) {
     }
   }
 
+  const patch: Record<string, unknown> = { user_id: user.id, symbol: asset.symbol };
+  if (investedUsd !== undefined) patch.invested_usd = investedUsd;
+  if (alertThresholdPct !== undefined) {
+    patch.alert_threshold_pct = alertThresholdPct;
+    if (alertThresholdPct !== null) {
+      const quote = await getQuote(asset.symbol);
+      patch.alert_reference_price = quote?.price ?? null;
+      patch.alert_last_triggered_at = null;
+    } else {
+      patch.alert_reference_price = null;
+    }
+  }
+
   // Upsert: si el activo no estaba en la watchlist, esto también lo agrega
   // — así "agregar una posición" funciona aunque el usuario no lo haya
   // seguido antes.
   const { error } = await supabase
     .from("watchlist_items")
-    .upsert(
-      { user_id: user.id, symbol: asset.symbol, invested_usd: investedUsd },
-      { onConflict: "user_id,symbol" },
-    );
+    .upsert(patch, { onConflict: "user_id,symbol" });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
