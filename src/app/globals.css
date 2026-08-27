@@ -23,6 +23,23 @@
   --gold: #d9a94e;
 }
 
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-ticker {
+  animation: ticker-scroll 35s linear infinite;
+}
+
+.animate-ticker:hover {
+  animation-play-state: paused;
+}
+
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
