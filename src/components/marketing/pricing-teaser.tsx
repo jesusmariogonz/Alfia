@@ -86,12 +86,18 @@ export function PricingTeaser() {
         {plans.map((plan) => (
           <div
             key={plan.name}
-            className={`flex flex-col rounded-xl border p-7 ${
+            className={`relative flex flex-col overflow-hidden rounded-2xl border p-7 transition-transform duration-200 hover:-translate-y-1 ${
               plan.featured
-                ? "border-green-bright bg-surface-2"
+                ? "border-green-bright bg-surface-2 shadow-[0_12px_50px_-16px_rgba(52,199,123,0.35)]"
                 : "border-border bg-surface"
             }`}
           >
+            {plan.featured && (
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-green-bright/15 blur-3xl"
+              />
+            )}
             <div className="flex items-center justify-between">
               <h3 className="font-display text-lg font-medium text-text">
                 {plan.name}
