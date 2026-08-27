@@ -15,5 +15,5 @@ jobs:
     steps:
       - name: Llamar /api/cron/tutorials
         run: |
-          curl -sSf -X GET "${{ secrets.ALFIA_SITE_URL }}/api/cron/tutorials" \
+          curl -sSfL -X GET "${{ secrets.ALFIA_SITE_URL }}/api/cron/tutorials" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

@@ -13,5 +13,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          curl -sSf -X GET "${{ secrets.ALFIA_SITE_URL }}/api/cron/deep-report" \
+          curl -sSfL -X GET "${{ secrets.ALFIA_SITE_URL }}/api/cron/deep-report" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

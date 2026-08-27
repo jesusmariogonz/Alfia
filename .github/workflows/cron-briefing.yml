@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          curl -sSf -X GET "${{ secrets.ALFIA_SITE_URL }}/api/cron/briefing?type=apertura" \
+          curl -sSfL -X GET "${{ secrets.ALFIA_SITE_URL }}/api/cron/briefing?type=apertura" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
 
   intradia:
@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          curl -sSf -X GET "${{ secrets.ALFIA_SITE_URL }}/api/cron/briefing?type=intradia" \
+          curl -sSfL -X GET "${{ secrets.ALFIA_SITE_URL }}/api/cron/briefing?type=intradia" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
 
   cierre:
@@ -40,5 +40,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          curl -sSf -X GET "${{ secrets.ALFIA_SITE_URL }}/api/cron/briefing?type=cierre" \
+          curl -sSfL -X GET "${{ secrets.ALFIA_SITE_URL }}/api/cron/briefing?type=cierre" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
