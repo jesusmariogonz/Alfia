@@ -1,5 +1,6 @@
 export const NAV_LINKS = [
   { href: "/dashboard", label: "Resumen" },
+  { href: "/reporte", label: "Reporte diario" },
   { href: "/portafolio", label: "Mi Portafolio" },
   { href: "/chat", label: "Chat de inversión" },
   { href: "/screener", label: "Screener" },

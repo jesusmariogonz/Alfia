@@ -5,7 +5,7 @@ import { MarketSentimentBanner } from "@/components/dashboard/market-sentiment-b
 import { Disclaimer } from "@/components/ui/disclaimer";
 import { Badge } from "@/components/ui/badge";
 import { isFreePlan, canUseChat } from "@/lib/plan";
-import { computeMarketSentiment } from "@/lib/analytics/sentiment";
+import { computeDailyReport } from "@/lib/analytics/daily-report";
 import type { Profile } from "@/types/database";
 
 type QuickLink = {
@@ -49,7 +49,8 @@ export default async function DashboardPage() {
     month: "long",
   }).format(new Date());
 
-  const sentiment = await computeMarketSentiment();
+  const report = await computeDailyReport();
+  const sentiment = report.sentiment;
 
   return (
     <div className="flex flex-col gap-8">
@@ -66,13 +67,17 @@ export default async function DashboardPage() {
           <h2 className="font-display text-lg font-medium text-text">
             Resumen del mercado
           </h2>
-          <p className="mt-3 text-sm leading-relaxed text-text-muted">
-            Los principales índices cerraron con movimientos mixtos tras los
-            comentarios de la Fed sobre el ritmo de futuros recortes de tasas. El
-            sector tecnológico lideró las ganancias mientras que consumo discrecional
-            retrocedió por datos de ventas al menudeo más débiles de lo esperado.
-            La volatilidad implícita se mantuvo estable durante la sesión.
-          </p>
+          <ul className="mt-3 flex flex-col gap-1.5 text-sm leading-relaxed text-text-muted">
+            {report.narrative.slice(0, 2).map((line, i) => (
+              <li key={i}>· {line}</li>
+            ))}
+          </ul>
+          <Link
+            href="/reporte"
+            className="mt-4 inline-block text-sm font-medium text-green-bright hover:underline"
+          >
+            Ver reporte completo →
+          </Link>
           <Disclaimer className="mt-4" />
         </div>
       </section>
