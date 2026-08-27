@@ -48,6 +48,26 @@ export type Tutorial = {
 
 export type BriefingType = "apertura" | "intradia" | "cierre";
 
+export type DeepReportContent = {
+  hook: string;
+  highlights: string[];
+  themes: string[];
+  sectorTake: string;
+  lectura: { question: string; answer: string }[];
+  swingTake: string[];
+  longTermTake: string[];
+  calendar: string[];
+  conclusion: string;
+  keyIdeas: string[];
+};
+
+export type DailyDeepReport = {
+  id: string;
+  report_date: string;
+  content: DeepReportContent;
+  created_at: string;
+};
+
 export type MarketBriefing = {
   id: string;
   type: BriefingType;

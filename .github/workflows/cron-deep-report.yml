@@ -1,0 +1,17 @@
+name: Cron - reporte diario detallado
+
+on:
+  schedule:
+    # 4:15pm ET (EDT, UTC-4) — poco después del cierre, para tener los
+    # datos del día completos. En horario estándar (EST, nov-mar) esto cae
+    # una hora más tarde en hora real de Nueva York.
+    - cron: "15 20 * * 1-5"
+  workflow_dispatch: {}
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -sSf -X GET "${{ secrets.ALFIA_SITE_URL }}/api/cron/deep-report" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
