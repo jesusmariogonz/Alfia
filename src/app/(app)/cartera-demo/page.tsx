@@ -43,7 +43,36 @@ export default async function CarteraDemoPage() {
         {open.length === 0 ? (
           <p className="mt-3 text-sm text-text-muted">Todavía no tienes posiciones demo abiertas.</p>
         ) : (
-          <div className="mt-4 overflow-x-auto">
+          <>
+          <div className="mt-4 flex flex-col divide-y divide-border border-y border-border sm:hidden">
+            {open.map((p) => {
+              const currentPrice = quotes[p.symbol] ?? p.entry_price;
+              const pnl = (currentPrice - p.entry_price) * p.shares;
+              const pnlPct = p.entry_price > 0 ? (currentPrice / p.entry_price - 1) * 100 : 0;
+              const up = pnl >= 0;
+              return (
+                <div key={p.id} className="py-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-data font-medium text-text">{p.symbol}</p>
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${up ? "bg-data-up/10 text-data-up" : "bg-data-down/10 text-data-down"}`}>
+                      {up ? "▲" : "▼"} {up ? "+" : ""}{pnlPct.toFixed(1)}%
+                    </span>
+                  </div>
+                  <p className={`mt-1 font-data text-lg font-semibold ${up ? "text-data-up" : "text-data-down"}`}>
+                    {up ? "+" : ""}${pnl.toLocaleString("es", { maximumFractionDigits: 0 })}
+                  </p>
+                  <p className="mt-1 text-xs text-text-muted">
+                    Entrada ${p.entry_price.toLocaleString("es", { maximumFractionDigits: 2 })} → actual $
+                    {currentPrice.toLocaleString("es", { maximumFractionDigits: 2 })} · {p.shares.toLocaleString("es", { maximumFractionDigits: 4 })} acciones
+                  </p>
+                  <div className="mt-3 flex items-center justify-between">
+                    <CloseDemoPositionButton id={p.id} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-4 hidden overflow-x-auto sm:block">
             <table className="w-full min-w-[760px] text-left text-sm">
               <thead>
                 <tr className="border-b border-border text-text-muted">
@@ -103,6 +132,7 @@ export default async function CarteraDemoPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </section>
 
