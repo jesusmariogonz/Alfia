@@ -144,7 +144,7 @@ export function AssetChartPanel({
                 Ajustes
               </button>
               {settingsOpen && (
-                <div className="absolute right-0 z-10 mt-2 w-56 rounded-lg border border-border bg-surface p-4 shadow-lg">
+                <div className="absolute left-0 z-10 mt-2 w-56 max-w-[calc(100vw-2.5rem)] rounded-lg border border-border bg-surface p-4 shadow-lg">
                   <p className="text-xs font-medium text-text">Escala del eje Y</p>
                   <div className="mt-2 flex flex-col gap-1.5 text-xs text-text-muted">
                     <label className="flex items-center gap-2">
