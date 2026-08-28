@@ -64,7 +64,7 @@ export default async function DashboardPage() {
   const bearishCount = todaysVotes?.filter((v) => v.vote === "bearish").length ?? 0;
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex min-w-0 flex-col gap-10">
       <section>
         <h1 className="font-display text-2xl font-semibold capitalize text-text">
           {today}

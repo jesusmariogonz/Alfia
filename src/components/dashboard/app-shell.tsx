@@ -23,7 +23,7 @@ export function AppShell({
       />
       <MobileNav />
       <Sidebar />
-      <div className="flex flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-bg/70 px-6 py-4 backdrop-blur">
           <p className="text-sm text-text-muted">{email}</p>
           <div className="flex items-center gap-4">
@@ -32,7 +32,7 @@ export function AppShell({
           </div>
         </header>
         <IndicesStrip />
-        <main className="flex-1 px-6 py-8">{children}</main>
+        <main className="min-w-0 flex-1 px-6 py-8">{children}</main>
       </div>
     </div>
   );

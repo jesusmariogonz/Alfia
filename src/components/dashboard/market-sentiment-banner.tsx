@@ -12,13 +12,13 @@ export function MarketSentimentBanner({ sentiment }: { sentiment: MarketSentimen
   return (
     <div className="p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <p className="text-xs text-text-muted">Sentimiento de mercado</p>
           <p className={`mt-1 font-display text-2xl font-semibold ${tone.text}`}>
             {sentiment.label}
           </p>
         </div>
-        <div className="flex flex-col items-end gap-1.5">
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
           <span className={`font-data text-3xl font-semibold ${tone.text}`}>
             {sentiment.score}
           </span>
@@ -27,7 +27,7 @@ export function MarketSentimentBanner({ sentiment }: { sentiment: MarketSentimen
           </div>
         </div>
       </div>
-      <p className="mt-3 text-sm text-text-muted">{sentiment.summary}</p>
+      <p className="mt-3 max-w-full text-sm text-text-muted [overflow-wrap:anywhere]">{sentiment.summary}</p>
     </div>
   );
 }
