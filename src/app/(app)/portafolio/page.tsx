@@ -8,7 +8,9 @@ import { usdToMxn } from "@/lib/fx";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Disclaimer } from "@/components/ui/disclaimer";
+import { InfoModal } from "@/components/ui/info-modal";
 import { CorrelationMatrix } from "@/components/portfolio/correlation-matrix";
+import { computeSignal, signalTone, signalRationale } from "@/lib/analytics/signal";
 import type { WatchlistItem, Profile } from "@/types/database";
 
 export default async function PortafolioPage() {
@@ -62,19 +64,46 @@ export default async function PortafolioPage() {
       const last = closes[closes.length - 1].close;
       const prev = closes[closes.length - 2].close;
       const returns = dailyReturns(closes);
+      const changePct = last / prev - 1;
+      const signal = computeSignal({
+        alfiaScore: score,
+        annualizedReturn: metrics.annualizedReturn,
+        changePct,
+      });
       return {
         symbol: item.symbol,
         investedUsd: item.invested_usd!,
         price: last,
-        changePct: last / prev - 1,
+        changePct,
         metrics,
         score,
         returns,
+        signal,
+        rationale: signalRationale(signal, item.symbol),
       };
     }),
   );
 
   const totalUsd = rows.reduce((sum, r) => sum + r.investedUsd, 0);
+
+  const buyMore = rows.filter((r) => r.signal === "Comprar más");
+  const sell = rows.filter((r) => r.signal === "Vender");
+  const strategyLines: string[] = [];
+  if (sell.length > 0) {
+    strategyLines.push(
+      `${sell.map((r) => r.symbol).join(", ")} muestra${sell.length > 1 ? "n" : ""} score bajo con retorno negativo — vale la pena revisar si mantener esa posición sigue teniendo sentido.`,
+    );
+  }
+  if (buyMore.length > 0) {
+    strategyLines.push(
+      `${buyMore.map((r) => r.symbol).join(", ")} tiene${buyMore.length > 1 ? "n" : ""} la combinación más fuerte de score, retorno y momentum — de tus posiciones actuales, donde más convendría concentrar capital adicional.`,
+    );
+  }
+  if (strategyLines.length === 0) {
+    strategyLines.push(
+      "Ninguna de tus posiciones tiene una señal fuerte en ningún sentido — por ahora, mantener el balance actual.",
+    );
+  }
 
   const { correlation } = computeCovarianceMatrix(
     rows.map((r) => r.symbol),
@@ -106,6 +135,21 @@ export default async function PortafolioPage() {
         </div>
       </div>
 
+      <div className="border-y border-border p-5">
+        <p className="text-sm font-medium text-text">Estrategia sugerida sobre tus posiciones</p>
+        <div className="mt-2 flex flex-col gap-1.5 text-sm leading-relaxed text-text-muted">
+          {strategyLines.map((line, i) => (
+            <p key={i}>· {line}</p>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-text-muted">
+          Basado en Alfia Score, retorno anualizado y momentum del día de cada
+          posición — no en una conexión con tu broker (eToro y la mayoría de
+          brokers retail no ofrecen esa integración). Es orientativo, no una
+          recomendación de inversión.
+        </p>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="w-full min-w-[820px] text-left text-sm">
           <thead>
@@ -117,6 +161,18 @@ export default async function PortafolioPage() {
               <th className="px-5 py-3 font-medium text-right">Retorno esperado</th>
               <th className="px-5 py-3 font-medium text-right">Volatilidad</th>
               <th className="px-5 py-3 font-medium text-right">Alfia Score</th>
+              <th className="px-5 py-3 font-medium text-right">
+                <span className="inline-flex items-center gap-1.5">
+                  Señal
+                  <InfoModal title="¿Qué es esta señal?">
+                    Es orientativa, no una recomendación de inversión. Combina
+                    el Alfia Score, el retorno anualizado y el movimiento del
+                    día de cada posición — la misma lógica que en el
+                    screener — para sugerir si tiene sentido comprar más,
+                    mantener, vigilar o vender.
+                  </InfoModal>
+                </span>
+              </th>
               <th className="px-5 py-3 font-medium"></th>
             </tr>
           </thead>
@@ -158,6 +214,14 @@ export default async function PortafolioPage() {
                   <Badge tone={row.score >= 65 ? "green" : row.score >= 40 ? "gold" : "neutral"}>
                     {row.score} · {scoreLabel(row.score)}
                   </Badge>
+                </td>
+                <td className="px-5 py-3 text-right">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className={`text-xs font-semibold ${signalTone(row.signal)}`}>{row.signal}</span>
+                    <InfoModal title={`${row.symbol}: ${row.signal}`} label="¿por qué?">
+                      {row.rationale}
+                    </InfoModal>
+                  </span>
                 </td>
                 <td className="px-5 py-3 text-right">
                   <Link href={`/activos/${row.symbol}`} className="text-xs text-green-bright hover:underline">

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Sparkline } from "@/components/analytics/sparkline";
 import { InfoModal } from "@/components/ui/info-modal";
 import { WatchlistStarButton } from "@/components/analytics/watchlist-star-button";
+import { computeSignal, signalTone } from "@/lib/analytics/signal";
 import type { AssetClass, Candle } from "@/lib/market-data";
 
 export type ScreenerRow = {
@@ -28,24 +29,12 @@ function scoreTone(score: number): string {
   return "text-data-down";
 }
 
-type Signal = "Retener" | "Vigilar" | "Vender";
-
-/**
- * Señal orientativa, no una recomendación: combina el Alfia Score (riesgo +
- * desempeño histórico) con el retorno anualizado. Un score bajo con retorno
- * negativo se marca "Vender" (peor combinación), un score alto con retorno
- * positivo "Retener"; todo lo intermedio queda como "Vigilar".
- */
-function screenerSignal(row: Pick<ScreenerRow, "alfiaScore" | "annualizedReturn">): Signal {
-  if (row.alfiaScore >= 60 && row.annualizedReturn > 0) return "Retener";
-  if (row.alfiaScore < 35 && row.annualizedReturn < 0) return "Vender";
-  return "Vigilar";
-}
-
-function signalTone(signal: Signal): string {
-  if (signal === "Retener") return "text-data-up";
-  if (signal === "Vender") return "text-data-down";
-  return "text-gold";
+function screenerSignal(row: Pick<ScreenerRow, "alfiaScore" | "annualizedReturn" | "changePct">) {
+  return computeSignal({
+    alfiaScore: row.alfiaScore,
+    annualizedReturn: row.annualizedReturn,
+    changePct: row.changePct,
+  });
 }
 
 const ASSET_CLASS_LABEL: Record<AssetClass, string> = {
@@ -197,10 +186,12 @@ export function ScreenerTable({
                   Señal
                   <InfoModal title="¿Cómo se calcula la señal?">
                     Es orientativa, no una recomendación de inversión. Combina el
-                    Alfia Score con el retorno anualizado: score alto (≥60) y
-                    retorno positivo se marca &ldquo;Retener&rdquo;; score bajo
-                    (&lt;35) y retorno negativo se marca &ldquo;Vender&rdquo;; el
-                    resto queda como &ldquo;Vigilar&rdquo;.
+                    Alfia Score, el retorno anualizado y el momentum del día:
+                    score muy alto (≥70), retorno positivo y el día en verde se
+                    marca &ldquo;Comprar más&rdquo;; score alto (≥60) y retorno
+                    positivo &ldquo;Mantener&rdquo;; score bajo (&lt;35) y
+                    retorno negativo &ldquo;Vender&rdquo;; el resto queda como
+                    &ldquo;Vigilar&rdquo;.
                   </InfoModal>
                 </span>
               </th>
